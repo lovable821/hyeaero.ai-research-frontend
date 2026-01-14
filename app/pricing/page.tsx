@@ -62,7 +62,7 @@ export default function PricingPage() {
               </ul>
               <div className="mt-auto">
                 <Link
-                  href="/get-started"
+                  href="/signup"
                   className="w-full text-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors block"
                 >
                   Get Started Free
@@ -94,7 +94,7 @@ export default function PricingPage() {
               </ul>
               <div className="mt-auto">
                 <Link
-                  href="/get-started"
+                  href="/signup"
                   className="w-full text-center px-6 py-3 bg-white text-blue-600 font-bold rounded-md hover:bg-gray-100 transition-colors shadow-lg block"
                   style={{ color: '#0284c7' }}
                 >

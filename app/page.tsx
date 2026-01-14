@@ -18,19 +18,19 @@ export default function Home() {
               resale history, and performance analytics.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/get-started"
-                className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
-              >
-                Get Started
-                <ArrowRightIcon className="ml-2 h-5 w-5" />
-              </Link>
-              <Link
-                href="/research"
-                className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-              >
-                Explore Research
-              </Link>
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+            >
+              Get Started
+              <ArrowRightIcon className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              href="/research"
+              className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            >
+              Explore Research
+            </Link>
             </div>
           </div>
         </div>
@@ -159,7 +159,7 @@ export default function Home() {
 
           <div className="text-center mt-12">
             <Link
-              href="/research"
+              href="/signup"
               className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
             >
               Try It Now
@@ -179,7 +179,7 @@ export default function Home() {
             Join professionals who trust HyeAero.AI for their aircraft research and valuation needs.
           </p>
           <Link
-            href="/get-started"
+            href="/signup"
             className="inline-flex items-center justify-center px-8 py-3 border-2 border-white text-base font-medium rounded-md text-white bg-transparent hover:bg-white hover:text-primary-600 transition-colors"
           >
             Start Your Free Trial

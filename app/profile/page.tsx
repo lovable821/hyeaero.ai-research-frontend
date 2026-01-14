@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircleIcon, XCircleIcon, ClockIcon, DocumentArrowDownIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+import NotFound from "@/app/not-found";
 
 type Tab = "subscription" | "usage" | "downloads" | "billing";
 
@@ -14,7 +17,14 @@ const tabs: { id: Tab; name: string }[] = [
 ];
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("subscription");
+
+  // Show 404 page if not authenticated (security: don't reveal route exists)
+  if (!isAuthenticated) {
+    return <NotFound />;
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -69,6 +79,9 @@ export default function ProfilePage() {
 }
 
 function SubscriptionTab() {
+  const { user } = useAuth();
+  const plan = user?.plan || "free";
+  
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
@@ -78,7 +91,7 @@ function SubscriptionTab() {
         <div className="mb-8 p-6 bg-primary-50 rounded-lg border border-primary-200">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">Free Plan</h3>
+              <h3 className="text-xl font-semibold text-gray-900 capitalize">{plan === "pro" ? "Pro" : "Free"} Plan</h3>
               <p className="text-gray-600">Current subscription plan</p>
             </div>
             <div className="flex items-center">
@@ -91,12 +104,14 @@ function SubscriptionTab() {
               <p className="text-sm text-gray-600">Renews on</p>
               <p className="text-lg font-semibold text-gray-900">January 12, 2027</p>
             </div>
-            <Link
-              href="/pricing"
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-            >
-              Upgrade to Pro
-            </Link>
+            {plan === "free" && (
+              <Link
+                href="/pricing"
+                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+              >
+                Upgrade to Pro
+              </Link>
+            )}
           </div>
         </div>
 

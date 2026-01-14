@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChatBubbleLeftRightIcon, ChartBarIcon, CalculatorIcon, BriefcaseIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Tab = "consultant" | "comparison" | "estimator" | "advisory";
 
@@ -13,7 +15,15 @@ const tabs: { id: Tab; name: string; icon: React.ComponentType<{ className?: str
 ];
 
 export default function ResearchPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("consultant");
+
+  const handleChatClick = () => {
+    if (!isAuthenticated) {
+      router.push("/signup");
+    }
+  };
 
   return (
     <div className="bg-white min-h-screen">
@@ -62,7 +72,7 @@ export default function ResearchPage() {
       {/* Tab Content */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {activeTab === "consultant" && <AskConsultantTab />}
+          {activeTab === "consultant" && <AskConsultantTab onChatClick={handleChatClick} isAuthenticated={isAuthenticated} />}
           {activeTab === "comparison" && <MarketComparisonTab />}
           {activeTab === "estimator" && <PriceEstimatorTab />}
           {activeTab === "advisory" && <ResaleAdvisoryTab />}
@@ -72,7 +82,7 @@ export default function ResearchPage() {
   );
 }
 
-function AskConsultantTab() {
+function AskConsultantTab({ onChatClick, isAuthenticated }: { onChatClick: () => void; isAuthenticated: boolean }) {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
@@ -82,13 +92,29 @@ function AskConsultantTab() {
         </p>
         
         {/* Chat Interface Placeholder */}
-        <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 min-h-[400px] flex items-center justify-center">
+        <div 
+          className={`border border-gray-200 rounded-lg p-6 bg-gray-50 min-h-[400px] flex items-center justify-center ${
+            !isAuthenticated ? "cursor-pointer hover:bg-gray-100 transition-colors" : ""
+          }`}
+          onClick={!isAuthenticated ? onChatClick : undefined}
+        >
           <div className="text-center">
             <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">AI Chat Interface Coming Soon</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Ask questions about aircraft models, specifications, market values, and more.
-            </p>
+            {!isAuthenticated ? (
+              <>
+                <p className="text-gray-700 font-medium mb-2">Sign up to start chatting</p>
+                <p className="text-sm text-gray-500">
+                  Create a free account to access our AI consultant and get instant answers to your questions.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-500">AI Chat Interface Coming Soon</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Ask questions about aircraft models, specifications, market values, and more.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

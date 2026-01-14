@@ -1,7 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function GetStartedPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  // Redirect authenticated users to research
+  if (isAuthenticated) {
+    router.push("/research");
+    return null;
+  }
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
@@ -31,10 +43,13 @@ export default function GetStartedPage() {
                 <p className="text-gray-600 mb-4">
                   Sign up for a free account to get started. No credit card required.
                 </p>
-                <button className="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors">
-                  Sign Up Free
-                  <ArrowRightIcon className="ml-2 h-5 w-5" />
-                </button>
+            <Link
+              href="/signup"
+              className="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors"
+            >
+              Sign Up Free
+              <ArrowRightIcon className="ml-2 h-5 w-5" />
+            </Link>
               </div>
             </div>
 
@@ -129,10 +144,13 @@ export default function GetStartedPage() {
           <p className="text-xl text-gray-600 mb-8">
             Join professionals who trust HyeAero.AI for their aircraft research and valuation needs.
           </p>
-          <button className="inline-flex items-center px-8 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors">
+          <Link
+            href="/signup"
+            className="inline-flex items-center px-8 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors"
+          >
             Create Free Account
             <ArrowRightIcon className="ml-2 h-5 w-5" />
-          </button>
+          </Link>
         </div>
       </section>
     </div>
