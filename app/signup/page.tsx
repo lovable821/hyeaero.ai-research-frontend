@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { EnvelopeIcon, LockClosedIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon, LockClosedIcon, GlobeAltIcon, UserIcon } from "@heroicons/react/24/outline";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -11,6 +11,7 @@ export default function SignupPage() {
   const router = useRouter();
   const { signup } = useAuth();
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
     country: "",
@@ -24,7 +25,7 @@ export default function SignupPage() {
     try {
       // Clear any previous onboarding data to ensure fresh start
       localStorage.removeItem("hyeaero_onboarding");
-      await signup(formData.email, formData.password, formData.country);
+      await signup(formData.email, formData.password, formData.name, formData.country);
       // Redirect to onboard (skip email verification for now)
       router.push("/onboard");
     } catch (error) {
@@ -60,6 +61,29 @@ export default function SignupPage() {
         {/* Signup Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            {/* Name */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <UserIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="John Doe"
+                />
+              </div>
+            </div>
+
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">

@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 interface User {
   email: string;
+  name: string;
   role?: string;
   plan: "free" | "pro";
 }
@@ -13,7 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  signup: (email: string, password: string, country?: string) => Promise<void>;
+  signup: (email: string, password: string, name: string, country?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,15 +39,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await new Promise(resolve => setTimeout(resolve, 500));
     // Note: We don't clear onboarding on login because the user might have already completed it
     // In a real app, onboarding status would be tied to the user account
-    const userData: User = {
-      email,
-      plan: "free", // Default to free plan
-    };
+    // Try to get existing user data to preserve name
+    const storedUser = localStorage.getItem("hyeaero_user");
+    let userData: User;
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        userData = {
+          email,
+          name: parsed.name || email.split("@")[0], // Use stored name or fallback
+          plan: parsed.plan || "free",
+        };
+      } catch (e) {
+        userData = {
+          email,
+          name: email.split("@")[0],
+          plan: "free",
+        };
+      }
+    } else {
+      userData = {
+        email,
+        name: email.split("@")[0], // Fallback to email username
+        plan: "free",
+      };
+    }
     setUser(userData);
     localStorage.setItem("hyeaero_user", JSON.stringify(userData));
   };
 
-  const signup = async (email: string, password: string, country?: string) => {
+  const signup = async (email: string, password: string, name: string, country?: string) => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
     // Clear any previous user data and onboarding data for fresh start
@@ -54,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("hyeaero_onboarding");
     const userData: User = {
       email,
+      name: name.trim() || email.split("@")[0], // Use provided name or fallback to email username
       plan: "free",
     };
     setUser(userData);

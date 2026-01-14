@@ -26,19 +26,19 @@ export default function Navigation() {
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 gap-4">
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 min-w-0">
             <Link href="/" className="flex items-center">
-              <Logo className="h-8 w-8 text-primary-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">
+              <Logo className="h-8 w-8 text-primary-600 flex-shrink-0" />
+              <span className="ml-2 text-xl font-bold text-gray-900 whitespace-nowrap">
                 HyeAero<span className="text-primary-600">.AI</span>
               </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
+          <div className="hidden md:block flex-1">
             <div className="ml-10 flex items-baseline space-x-4">
               {navigation.map((item) => {
                 const isActive = pathname === item.href;
@@ -46,7 +46,7 @@ export default function Navigation() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive
                         ? "bg-primary-50 text-primary-700 border-b-2 border-primary-600"
                         : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
@@ -60,21 +60,22 @@ export default function Navigation() {
           </div>
 
           {/* CTA Button */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
                 <Link
                   href="/profile"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium truncate max-w-[150px]"
+                  title={user?.name || "Profile"}
                 >
-                  Profile
+                  {user?.name || "Profile"}
                 </Link>
                 <button
                   onClick={() => {
                     logout();
                     router.push("/");
                   }}
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Sign out
                 </button>
@@ -82,7 +83,7 @@ export default function Navigation() {
             ) : (
               <Link
                 href="/signup"
-                className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors"
+                className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors whitespace-nowrap"
               >
                 Get Started
               </Link>
@@ -132,10 +133,11 @@ export default function Navigation() {
               <>
                 <Link
                   href="/profile"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 truncate"
                   onClick={() => setMobileMenuOpen(false)}
+                  title={user?.name || "Profile"}
                 >
-                  Profile
+                  {user?.name || "Profile"}
                 </Link>
                 <button
                   onClick={() => {
