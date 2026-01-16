@@ -62,6 +62,7 @@ frontend/
 #### 2. **Signup Page** (`/signup`)
 - **Purpose**: User registration
 - **Fields**:
+  - Full Name (required)
   - Email (required)
   - Password (required, min 8 chars)
   - Country (optional)
