@@ -41,7 +41,7 @@ export default function ProfilePage() {
       {/* Tabs */}
       <section className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-16 z-40 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 overflow-x-auto">
+          <div className="flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -49,7 +49,7 @@ export default function ProfilePage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                     className={`
-                    px-4 py-4 border-b-2 font-medium text-sm whitespace-nowrap transition-colors
+                    px-3 sm:px-4 py-3 sm:py-4 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors flex-shrink-0
                     ${
                       isActive
                         ? "border-primary-600 dark:border-primary-400 text-primary-600 dark:text-primary-400"
@@ -247,16 +247,16 @@ function BillingTab() {
         {/* Payment Method */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
-          <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-4" />
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">No payment method on file</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Free plan - no payment required</p>
+          <div className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center flex-1 min-w-0">
+                <CreditCardIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400 dark:text-gray-500 mr-3 sm:mr-4 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">No payment method on file</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Free plan - no payment required</p>
                 </div>
               </div>
-              <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <button className="w-full sm:w-auto px-4 py-2.5 text-sm sm:text-base border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">
                 Add Payment Method
               </button>
             </div>

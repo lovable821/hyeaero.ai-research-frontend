@@ -243,15 +243,15 @@ function Step1Role({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">What best describes you?</h2>
-      <p className="text-gray-600 dark:text-gray-300 mb-6">Select the option that best matches your role</p>
-      <div className="space-y-3 mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">What best describes you?</h2>
+      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6">Select the option that best matches your role</p>
+      <div className="space-y-2 sm:space-y-3 mb-6">
         {roles.map((role) => (
           <button
             key={role.id}
             type="button"
             onClick={() => onSelect(role.id)}
-            className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
+            className={`w-full text-left px-4 py-2.5 sm:py-3 rounded-lg border-2 transition-all text-sm sm:text-base ${
               selected === role.id
                 ? "border-primary-600 dark:border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-900 dark:text-primary-100"
                 : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -266,10 +266,10 @@ function Step1Role({
           type="button"
           onClick={onNext}
           disabled={!canProceed}
-          className="px-6 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          className="px-4 sm:px-6 py-2.5 bg-primary-600 dark:bg-primary-500 text-white text-sm sm:text-base font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
           Next
-          <ArrowRightIcon className="ml-2 h-5 w-5" />
+          <ArrowRightIcon className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
         </button>
       </div>
     </div>
@@ -294,55 +294,53 @@ function Step2Aircraft({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
         Which aircraft models are you most interested in?
       </h2>
-      <p className="text-gray-600 dark:text-gray-300 mb-4">Select all that apply (optional)</p>
-      <div className="grid grid-cols-2 gap-3 mb-6 max-h-96 overflow-y-auto">
+      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4">Select all that apply (optional)</p>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-6 max-h-96 overflow-y-auto">
         {AIRCRAFT_MODELS.map((model) => (
           <button
             key={model}
             type="button"
             onClick={() => onToggle(model)}
-            className={`px-4 py-3 rounded-lg border-2 text-sm transition-all ${
+            className={`px-2 sm:px-4 py-2 sm:py-2.5 rounded-lg border-2 text-xs sm:text-sm transition-all min-h-[44px] flex items-center justify-between ${
               selected.includes(model)
                 ? "border-primary-600 dark:border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-900 dark:text-primary-100"
                 : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span>{model}</span>
-              {selected.includes(model) && (
-                <CheckIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-              )}
-            </div>
+            <span className="truncate flex-1 text-left">{model}</span>
+            {selected.includes(model) && (
+              <CheckIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary-600 dark:text-primary-400 flex-shrink-0 ml-1" />
+            )}
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onPrevious}
-          className="px-6 py-2 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
+          className="px-4 sm:px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
         >
-          <ArrowRightIcon className="h-5 w-5 mr-2 rotate-180" />
+          <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 rotate-180" />
           Previous
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onSkip}
-            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+            className="px-3 sm:px-4 py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
           >
             Skip this step
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="px-6 py-2 bg-primary-600 dark:bg-primary-500 text-white font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors flex items-center"
+            className="px-4 sm:px-6 py-2.5 bg-primary-600 dark:bg-primary-500 text-white text-sm sm:text-base font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors flex items-center justify-center flex-1 sm:flex-initial"
           >
             {hasSelections ? "Continue" : "Next"}
-            <ArrowRightIcon className="ml-2 h-5 w-5" />
+            <ArrowRightIcon className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
       </div>
@@ -394,30 +392,30 @@ function Step3Region({
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onPrevious}
-          className="px-6 py-2 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
+          className="px-4 sm:px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
         >
-          <ArrowRightIcon className="h-5 w-5 mr-2 rotate-180" />
+          <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 rotate-180" />
           Previous
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onSkip}
-            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+            className="px-3 sm:px-4 py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
           >
             Skip this step
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="px-6 py-2 bg-primary-600 dark:bg-primary-500 text-white font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors flex items-center"
+            className="px-4 sm:px-6 py-2.5 bg-primary-600 dark:bg-primary-500 text-white text-sm sm:text-base font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors flex items-center justify-center flex-1 sm:flex-initial"
           >
             {hasSelection ? "Continue" : "Next"}
-            <ArrowRightIcon className="ml-2 h-5 w-5" />
+            <ArrowRightIcon className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
       </div>
@@ -490,27 +488,27 @@ function Step4Completion({
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onPrevious}
-          className="px-6 py-2 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
+          className="px-4 sm:px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
         >
-          <ArrowRightIcon className="h-5 w-5 mr-2 rotate-180" />
+          <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 rotate-180" />
           Previous
         </button>
         <button
           type="button"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="px-6 py-2 bg-primary-600 dark:bg-primary-500 text-white font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="px-4 sm:px-6 py-2.5 bg-primary-600 dark:bg-primary-500 text-white text-sm sm:text-base font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center flex-1 sm:flex-initial"
         >
           {isSubmitting ? (
             "Setting up..."
           ) : (
             <>
               Complete setup
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
+              <ArrowRightIcon className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </>
           )}
         </button>

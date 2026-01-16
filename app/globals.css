@@ -40,3 +40,13 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
+
+/* Hide scrollbar for tab navigation */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

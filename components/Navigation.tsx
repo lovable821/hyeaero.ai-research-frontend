@@ -32,7 +32,10 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16 gap-4">
           {/* Logo */}
           <div className="flex-shrink-0 min-w-0">
-            <Link href="/" className="flex items-center">
+            <Link 
+              href="/" 
+              className="flex items-center"
+            >
               <Logo className="h-8 w-8 text-primary-600 dark:text-primary-400 flex-shrink-0" />
               <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">
                 HyeAero<span className="text-primary-600 dark:text-primary-400">.AI</span>
