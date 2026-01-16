@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
@@ -10,17 +11,23 @@ export default function GetStartedPage() {
   const { isAuthenticated } = useAuth();
 
   // Redirect authenticated users to research
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/research");
+    }
+  }, [isAuthenticated, router]);
+
+  // Show loading or nothing while redirecting
   if (isAuthenticated) {
-    router.push("/research");
     return null;
   }
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen transition-colors">
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-50 to-accent-50 py-12 border-b border-gray-200">
+      <section className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-800 dark:to-gray-800 py-12 border-b border-gray-200 dark:border-gray-700 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Get Started</h1>
-          <p className="text-xl text-gray-600 max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Get Started</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
             Start using HyeAero.AI today. Create your account and begin researching aircraft models, 
             comparing values, and accessing market data.
           </p>
@@ -39,8 +46,8 @@ export default function GetStartedPage() {
                 </div>
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Create Your Account</h2>
-                <p className="text-gray-600 mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Create Your Account</h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   Sign up for a free account to get started. No credit card required.
                 </p>
             <Link
@@ -61,8 +68,8 @@ export default function GetStartedPage() {
                 </div>
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Explore Research Tools</h2>
-                <p className="text-gray-600 mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Explore Research Tools</h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   Access our AI-powered research tools, market data, and valuation services.
                 </p>
                 <Link
@@ -83,8 +90,8 @@ export default function GetStartedPage() {
                 </div>
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Upgrade to Pro (Optional)</h2>
-                <p className="text-gray-600 mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Upgrade to Pro (Optional)</h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   Upgrade to Pro for unlimited access, advanced features, and priority support.
                 </p>
                 <Link
@@ -101,36 +108,36 @@ export default function GetStartedPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-gray-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">What You'll Get</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">What You'll Get</h2>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             <div className="flex items-start">
-              <CheckIcon className="h-6 w-6 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
+              <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">AI-Powered Research</h3>
-                <p className="text-gray-600">Get instant answers to your aircraft research questions.</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">AI-Powered Research</h3>
+                <p className="text-gray-600 dark:text-gray-300">Get instant answers to your aircraft research questions.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <CheckIcon className="h-6 w-6 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
+              <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Market Data Access</h3>
-                <p className="text-gray-600">Access comprehensive market data and analytics.</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Market Data Access</h3>
+                <p className="text-gray-600 dark:text-gray-300">Access comprehensive market data and analytics.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <CheckIcon className="h-6 w-6 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
+              <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Value Comparison</h3>
-                <p className="text-gray-600">Compare aircraft values using proprietary data.</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Value Comparison</h3>
+                <p className="text-gray-600 dark:text-gray-300">Compare aircraft values using proprietary data.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <CheckIcon className="h-6 w-6 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
+              <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Real-Time Updates</h3>
-                <p className="text-gray-600">Stay up-to-date with the latest market insights.</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Real-Time Updates</h3>
+                <p className="text-gray-600 dark:text-gray-300">Stay up-to-date with the latest market insights.</p>
               </div>
             </div>
           </div>
@@ -140,8 +147,8 @@ export default function GetStartedPage() {
       {/* CTA Section */}
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ready to Get Started?</h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Join professionals who trust HyeAero.AI for their aircraft research and valuation needs.
           </p>
           <Link
