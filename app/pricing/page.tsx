@@ -27,12 +27,12 @@ const features = {
 
 export default function PricingPage() {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen transition-colors">
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-50 to-accent-50 py-12 border-b border-gray-200">
+      <section className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-800 dark:to-gray-800 py-12 border-b border-gray-200 dark:border-gray-700 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Pricing</h1>
-          <p className="text-xl text-gray-600 max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Pricing</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
             Choose the plan that fits your needs. Start with our free plan or upgrade to Pro for advanced features.
           </p>
         </div>
@@ -43,27 +43,27 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
             {/* Free Plan */}
-            <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-lg transition-all duration-200 flex flex-col h-full">
+            <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-8 hover:shadow-lg transition-all duration-200 flex flex-col h-full">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Free</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Free</h2>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-gray-900">$0</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-4xl font-bold text-gray-900 dark:text-white">$0</span>
+                  <span className="text-gray-600 dark:text-gray-300">/month</span>
                 </div>
-                <p className="text-gray-600">Perfect for getting started</p>
+                <p className="text-gray-600 dark:text-gray-300">Perfect for getting started</p>
               </div>
               <ul className="space-y-3 mb-8 flex-grow">
                 {features.free.map((feature, index) => (
                   <li key={index} className="flex items-start">
-                    <CheckIcon className="h-5 w-5 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">{feature}</span>
+                    <CheckIcon className="h-5 w-5 text-primary-600 dark:text-primary-400 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
               <div className="mt-auto">
                 <Link
                   href="/signup"
-                  className="w-full text-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors block"
+                  className="w-full text-center px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors block"
                 >
                   Get Started Free
                 </Link>
@@ -106,30 +106,30 @@ export default function PricingPage() {
 
           {/* Feature Highlights */}
           <div className="mt-16 grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <div className="text-center p-6 bg-gray-50 rounded-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <SparklesIcon className="h-6 w-6 text-primary-600" />
+            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors">
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <SparklesIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Enhanced AI Responses</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Enhanced AI Responses</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Pro users get clearer, more accurate answers powered by advanced business ML models.
               </p>
             </div>
-            <div className="text-center p-6 bg-gray-50 rounded-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckIcon className="h-6 w-6 text-primary-600" />
+            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors">
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">No Limits</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">No Limits</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Unlimited research queries, data access, and exports - no restrictions.
               </p>
             </div>
-            <div className="text-center p-6 bg-gray-50 rounded-lg">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckIcon className="h-6 w-6 text-primary-600" />
+            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors">
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Export & Reports</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Export & Reports</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Email reports and PDF exports for all your research and analysis.
               </p>
             </div>
@@ -137,11 +137,11 @@ export default function PricingPage() {
 
           {/* Additional Info */}
           <div className="mt-12 text-center max-w-3xl mx-auto">
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               All plans include access to our AI-powered research tools and market data platform.
             </p>
-            <p className="text-sm text-gray-500">
-              Need a custom plan? <Link href="/contact" className="text-primary-600 hover:text-primary-700 font-medium">Contact us</Link> for enterprise solutions.
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Need a custom plan? <Link href="/contact" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">Contact us</Link> for enterprise solutions.
             </p>
           </div>
         </div>

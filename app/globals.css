@@ -24,6 +24,8 @@
   --color-accent-900: #451a03;
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -33,7 +35,8 @@
 
 @layer base {
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }

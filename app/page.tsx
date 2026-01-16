@@ -3,16 +3,16 @@ import { ArrowRightIcon, SparklesIcon, ChartBarIcon, ClockIcon } from "@heroicon
 
 export default function Home() {
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-gray-900 transition-colors">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-50 via-white to-accent-50 py-20 sm:py-32">
+      <section className="relative bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 py-20 sm:py-32 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               Aircraft Research &{" "}
-              <span className="text-primary-600">Valuation Consultant</span>
+              <span className="text-primary-600 dark:text-primary-400">Valuation Consultant</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
               A real-time AI assistant that helps users and internal brokers research aircraft models, 
               compare values, and assess acquisition opportunities using Hye Aero's proprietary market data, 
               resale history, and performance analytics.
@@ -27,7 +27,7 @@ export default function Home() {
             </Link>
             <Link
               href="/research"
-              className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Explore Research
             </Link>
@@ -37,21 +37,21 @@ export default function Home() {
       </section>
 
       {/* Real-Time Data Highlight */}
-      <section className="py-16 bg-white border-y border-gray-200">
+      <section className="py-16 bg-white dark:bg-gray-900 border-y border-gray-200 dark:border-gray-700 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-            <div className="flex items-center gap-3 text-gray-900">
-              <ClockIcon className="h-8 w-8 text-primary-600" />
+            <div className="flex items-center gap-3 text-gray-900 dark:text-white">
+              <ClockIcon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
               <div>
                 <h3 className="text-lg font-semibold">Real-Time Data Updates</h3>
-                <p className="text-sm text-gray-600">Continuously updated market data</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Continuously updated market data</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 text-gray-900">
-              <SparklesIcon className="h-8 w-8 text-primary-600" />
+            <div className="flex items-center gap-3 text-gray-900 dark:text-white">
+              <SparklesIcon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
               <div>
                 <h3 className="text-lg font-semibold">Most Recent Information</h3>
-                <p className="text-sm text-gray-600">Latest market insights and valuations</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Latest market insights and valuations</p>
               </div>
             </div>
           </div>
@@ -59,46 +59,46 @@ export default function Home() {
       </section>
 
       {/* Purpose Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gray-50 dark:bg-gray-800/50 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Our Purpose
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Empowering aircraft professionals with intelligent insights and comprehensive data
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-                <ChartBarIcon className="h-6 w-6 text-primary-600" />
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mb-4">
+                <ChartBarIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Market Research</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Market Research</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Comprehensive aircraft model research with detailed specifications, 
                 performance metrics, and market positioning.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-                <SparklesIcon className="h-6 w-6 text-primary-600" />
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mb-4">
+                <SparklesIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Value Comparison</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Value Comparison</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Compare aircraft values using proprietary market data, resale history, 
                 and performance analytics to make informed decisions.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-                <ArrowRightIcon className="h-6 w-6 text-primary-600" />
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mb-4">
+                <ArrowRightIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Acquisition Assessment</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Acquisition Assessment</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Assess acquisition opportunities with real-time market insights 
                 and comprehensive performance analytics.
               </p>
@@ -108,49 +108,49 @@ export default function Home() {
       </section>
 
       {/* Workflow Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               From query to clear answer in three simple steps
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 relative">
             {/* Connection lines for desktop */}
-            <div className="hidden md:block absolute top-1/2 left-1/3 right-1/3 h-0.5 bg-primary-200 -translate-y-1/2" />
+            <div className="hidden md:block absolute top-1/2 left-1/3 right-1/3 h-0.5 bg-primary-200 dark:bg-primary-800 -translate-y-1/2" />
 
-            <div className="relative bg-white p-8 rounded-lg border-2 border-primary-200 text-center">
-              <div className="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="relative bg-white dark:bg-gray-800 p-8 rounded-lg border-2 border-primary-200 dark:border-primary-800 text-center transition-colors">
+              <div className="w-16 h-16 bg-primary-600 dark:bg-primary-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 1
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ask Your Question</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Ask Your Question</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Query our AI assistant about aircraft models, specifications, 
                 market values, or acquisition opportunities.
               </p>
             </div>
 
-            <div className="relative bg-white p-8 rounded-lg border-2 border-primary-200 text-center">
-              <div className="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="relative bg-white dark:bg-gray-800 p-8 rounded-lg border-2 border-primary-200 dark:border-primary-800 text-center transition-colors">
+              <div className="w-16 h-16 bg-primary-600 dark:bg-primary-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 2
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">AI Analysis</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">AI Analysis</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Our AI analyzes proprietary market data, resale history, 
                 and performance analytics to provide insights.
               </p>
             </div>
 
-            <div className="relative bg-white p-8 rounded-lg border-2 border-primary-200 text-center">
-              <div className="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="relative bg-white dark:bg-gray-800 p-8 rounded-lg border-2 border-primary-200 dark:border-primary-800 text-center transition-colors">
+              <div className="w-16 h-16 bg-primary-600 dark:bg-primary-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 3
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Get Clear Answers</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Get Clear Answers</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Receive comprehensive, actionable answers with detailed 
                 data, comparisons, and recommendations.
               </p>

@@ -72,10 +72,10 @@ export default function OnboardPage() {
   // Show loading while checking auth
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
         </div>
       </div>
     );
@@ -149,14 +149,14 @@ export default function OnboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-2xl w-full">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center mb-4">
-            <Logo className="h-8 w-8 text-primary-600" />
-            <span className="ml-2 text-xl font-bold text-gray-900">
-              HyeAero<span className="text-primary-600">.AI</span>
+            <Logo className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
+              HyeAero<span className="text-primary-600 dark:text-primary-400">.AI</span>
             </span>
           </div>
         </div>
@@ -164,23 +164,23 @@ export default function OnboardPage() {
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Step {currentStep} of {totalSteps}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               {Math.round((currentStep / totalSteps) * 100)}% complete
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
-              className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+              className="bg-primary-600 dark:bg-primary-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             ></div>
           </div>
         </div>
 
         {/* Step Content */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 transition-colors">
           {currentStep === 1 && (
             <Step1Role
               onSelect={handleRoleSelect}
@@ -243,8 +243,8 @@ function Step1Role({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">What best describes you?</h2>
-      <p className="text-gray-600 mb-6">Select the option that best matches your role</p>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">What best describes you?</h2>
+      <p className="text-gray-600 dark:text-gray-300 mb-6">Select the option that best matches your role</p>
       <div className="space-y-3 mb-6">
         {roles.map((role) => (
           <button
@@ -253,8 +253,8 @@ function Step1Role({
             onClick={() => onSelect(role.id)}
             className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
               selected === role.id
-                ? "border-primary-600 bg-primary-50 text-primary-900"
-                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                ? "border-primary-600 dark:border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-900 dark:text-primary-100"
+                : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600"
             }`}
           >
             {role.label}
@@ -294,10 +294,10 @@ function Step2Aircraft({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
         Which aircraft models are you most interested in?
       </h2>
-      <p className="text-gray-600 mb-4">Select all that apply (optional)</p>
+      <p className="text-gray-600 dark:text-gray-300 mb-4">Select all that apply (optional)</p>
       <div className="grid grid-cols-2 gap-3 mb-6 max-h-96 overflow-y-auto">
         {AIRCRAFT_MODELS.map((model) => (
           <button
@@ -306,24 +306,24 @@ function Step2Aircraft({
             onClick={() => onToggle(model)}
             className={`px-4 py-3 rounded-lg border-2 text-sm transition-all ${
               selected.includes(model)
-                ? "border-primary-600 bg-primary-50 text-primary-900"
-                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                ? "border-primary-600 dark:border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-900 dark:text-primary-100"
+                : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600"
             }`}
           >
             <div className="flex items-center justify-between">
               <span>{model}</span>
               {selected.includes(model) && (
-                <CheckIcon className="h-5 w-5 text-primary-600" />
+                <CheckIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               )}
             </div>
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onPrevious}
-          className="px-6 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors flex items-center"
+          className="px-6 py-2 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
         >
           <ArrowRightIcon className="h-5 w-5 mr-2 rotate-180" />
           Previous
@@ -332,14 +332,14 @@ function Step2Aircraft({
           <button
             type="button"
             onClick={onSkip}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
           >
             Skip this step
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="px-6 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors flex items-center"
+            className="px-6 py-2 bg-primary-600 dark:bg-primary-500 text-white font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors flex items-center"
           >
             {hasSelections ? "Continue" : "Next"}
             <ArrowRightIcon className="ml-2 h-5 w-5" />
@@ -376,8 +376,8 @@ function Step3Region({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Primary market region</h2>
-      <p className="text-gray-600 mb-6">Select your primary region of interest (optional)</p>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Primary market region</h2>
+      <p className="text-gray-600 dark:text-gray-300 mb-6">Select your primary region of interest (optional)</p>
       <div className="space-y-3 mb-6">
         {regions.map((region) => (
           <button
@@ -386,19 +386,19 @@ function Step3Region({
             onClick={() => onSelect(region.id)}
             className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
               selected === region.id
-                ? "border-primary-600 bg-primary-50 text-primary-900"
-                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                ? "border-primary-600 dark:border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-900 dark:text-primary-100"
+                : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600"
             }`}
           >
             {region.label}
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onPrevious}
-          className="px-6 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors flex items-center"
+          className="px-6 py-2 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
         >
           <ArrowRightIcon className="h-5 w-5 mr-2 rotate-180" />
           Previous
@@ -407,14 +407,14 @@ function Step3Region({
           <button
             type="button"
             onClick={onSkip}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
           >
             Skip this step
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="px-6 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors flex items-center"
+            className="px-6 py-2 bg-primary-600 dark:bg-primary-500 text-white font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors flex items-center"
           >
             {hasSelection ? "Continue" : "Next"}
             <ArrowRightIcon className="ml-2 h-5 w-5" />
@@ -455,46 +455,46 @@ function Step4Completion({
 
   return (
     <div className="text-center">
-      <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <CheckIcon className="h-8 w-8 text-primary-600" />
+      <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+        <CheckIcon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">You're all set!</h2>
-      <p className="text-gray-600 mb-8">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">You're all set!</h2>
+      <p className="text-gray-600 dark:text-gray-300 mb-8">
         Review your preferences and complete your account setup
       </p>
 
       {/* Summary */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-        <h3 className="font-semibold text-gray-900 mb-4">Your preferences:</h3>
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 mb-8 text-left transition-colors">
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Your preferences:</h3>
         <div className="space-y-3">
           <div>
-            <span className="text-sm text-gray-600">Role:</span>
-            <span className="ml-2 font-medium text-gray-900">
+            <span className="text-sm text-gray-600 dark:text-gray-300">Role:</span>
+            <span className="ml-2 font-medium text-gray-900 dark:text-white">
               {data.role ? roleLabels[data.role] : "Not selected"}
             </span>
           </div>
           <div>
-            <span className="text-sm text-gray-600">Aircraft interests:</span>
-            <span className="ml-2 font-medium text-gray-900">
+            <span className="text-sm text-gray-600 dark:text-gray-300">Aircraft interests:</span>
+            <span className="ml-2 font-medium text-gray-900 dark:text-white">
               {data.aircraftInterests && data.aircraftInterests.length > 0
                 ? `${data.aircraftInterests.length} selected`
                 : "Skipped"}
             </span>
           </div>
           <div>
-            <span className="text-sm text-gray-600">Region:</span>
-            <span className="ml-2 font-medium text-gray-900">
+            <span className="text-sm text-gray-600 dark:text-gray-300">Region:</span>
+            <span className="ml-2 font-medium text-gray-900 dark:text-white">
               {data.region ? regionLabels[data.region] : "Skipped"}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onPrevious}
-          className="px-6 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors flex items-center"
+          className="px-6 py-2 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
         >
           <ArrowRightIcon className="h-5 w-5 mr-2 rotate-180" />
           Previous
@@ -503,7 +503,7 @@ function Step4Completion({
           type="button"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="px-6 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="px-6 py-2 bg-primary-600 dark:bg-primary-500 text-white font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
         >
           {isSubmitting ? (
             "Setting up..."

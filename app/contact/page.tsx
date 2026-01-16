@@ -26,12 +26,12 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen transition-colors">
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-50 to-accent-50 py-12 border-b border-gray-200">
+      <section className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-800 dark:to-gray-800 py-12 border-b border-gray-200 dark:border-gray-700 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
-          <p className="text-xl text-gray-600 max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Contact Us</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
             Get in touch with our team. We're here to help with your aircraft research and valuation needs.
           </p>
         </div>
@@ -43,10 +43,10 @@ export default function ContactPage() {
           <div className="grid md:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Send us a message</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Send us a message</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Name
                   </label>
                   <input
@@ -56,11 +56,11 @@ export default function ContactPage() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email
                   </label>
                   <input
@@ -70,11 +70,11 @@ export default function ContactPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   />
                 </div>
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Subject
                   </label>
                   <input
@@ -84,11 +84,11 @@ export default function ContactPage() {
                     required
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Message
                   </label>
                   <textarea
@@ -98,12 +98,12 @@ export default function ContactPage() {
                     required
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full px-6 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors"
+                  className="w-full px-6 py-3 bg-primary-600 dark:bg-primary-500 text-white font-medium rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
                 >
                   Send Message
                 </button>
@@ -112,33 +112,33 @@ export default function ContactPage() {
 
             {/* Contact Info */}
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Get in touch</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Get in touch</h2>
               <div className="space-y-6">
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
-                    <EnvelopeIcon className="h-6 w-6 text-primary-600" />
+                  <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mr-4">
+                    <EnvelopeIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Email</h3>
-                    <p className="text-gray-600">contact@hyeaero.ai</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Email</h3>
+                    <p className="text-gray-600 dark:text-gray-300">contact@hyeaero.ai</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
-                    <PhoneIcon className="h-6 w-6 text-primary-600" />
+                  <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mr-4">
+                    <PhoneIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Phone</h3>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Phone</h3>
+                    <p className="text-gray-600 dark:text-gray-300">+1 (555) 123-4567</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
-                    <MapPinIcon className="h-6 w-6 text-primary-600" />
+                  <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mr-4">
+                    <MapPinIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Office</h3>
-                    <p className="text-gray-600">123 Aviation Way<br />Aerospace City, AC 12345</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Office</h3>
+                    <p className="text-gray-600 dark:text-gray-300">123 Aviation Way<br />Aerospace City, AC 12345</p>
                   </div>
                 </div>
               </div>
