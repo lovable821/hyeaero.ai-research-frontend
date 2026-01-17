@@ -106,7 +106,7 @@ export default function PricingPage() {
 
           {/* Feature Highlights */}
           <div className="mt-16 grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors">
+            <div className="text-center p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <SparklesIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
@@ -115,7 +115,7 @@ export default function PricingPage() {
                 Pro users get clearer, more accurate answers powered by advanced business ML models.
               </p>
             </div>
-            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors">
+            <div className="text-center p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
@@ -124,7 +124,7 @@ export default function PricingPage() {
                 Unlimited research queries, data access, and exports - no restrictions.
               </p>
             </div>
-            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors">
+            <div className="text-center p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
