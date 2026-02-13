@@ -1,0 +1,13 @@
+# Copy this file to the ROOT of your FRONTEND repository as render.yaml
+# Then in Render: New → Blueprint → connect frontend repo → apply. Set NEXT_PUBLIC_API_URL in the dashboard.
+# Root Directory is left blank (repo root = frontend app).
+
+services:
+  - type: web
+    name: hyeaero-ai
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
