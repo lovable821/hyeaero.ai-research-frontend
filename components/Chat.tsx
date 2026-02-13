@@ -21,6 +21,22 @@ type ChatProps = {
   onSuggestedQueryConsumed?: () => void;
 };
 
+/** Generate a unique ID; works in browsers and environments where crypto.randomUUID is missing */
+function generateId(): string {
+  if (typeof crypto !== "undefined" && typeof (crypto as { randomUUID?: () => string }).randomUUID === "function") {
+    return (crypto as { randomUUID: () => string }).randomUUID();
+  }
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+    bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+    const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 const WELCOME = `Hello! I'm your AI research consultant powered by Hye Aero's data. I can help you with:
 
 • Aircraft model research and specifications
@@ -111,7 +127,7 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
     const text = input.trim();
     if (!text || isLoading) return;
 
-    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
+    const userMsg: Message = { id: generateId(), role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     onQuerySent?.(text);
@@ -134,7 +150,7 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
       setMessages((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           role: "assistant",
           content: answer,
           sources: sources.length ? sources : undefined,
@@ -148,7 +164,7 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
       setMessages((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           role: "assistant",
           content: shouldRetry ? "Retrying…" : errorMsg,
         },

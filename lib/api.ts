@@ -1,9 +1,9 @@
 /**
  * HyeAero.AI — API client for Aircraft Research & Valuation Consultant
- * Base URL: NEXT_PUBLIC_API_URL (default http://localhost:8000)
+ * Base URL: NEXT_PUBLIC_API_URL (default http://88.99.198.243)
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://88.99.198.243";
 
 export type AircraftModelsResponse = { models: string[] };
 

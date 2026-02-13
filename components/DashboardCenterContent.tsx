@@ -101,6 +101,55 @@ function downloadValuationPdf(
   doc.save(`hyeaero-valuation-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
+function downloadResalePdf(query: string, result: ResaleAdvisoryResponse) {
+  const doc = new jsPDF({ format: "a4", unit: "mm" });
+  const margin = 20;
+  const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
+  const lineHeight = 6;
+  let y = margin;
+
+  doc.setFontSize(16);
+  doc.text("HyeAero.AI — Resale Advisory", margin, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+  y += 10;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("Query", margin, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  const queryLines = doc.splitTextToSize(query || "—", maxWidth);
+  queryLines.forEach((line: string) => {
+    doc.text(line, margin, y);
+    y += lineHeight;
+  });
+  y += 6;
+  doc.setFont("helvetica", "bold");
+  doc.text("Resale guidance", margin, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  const insightText = result.error ? result.error : (result.insight || "No guidance available.");
+  const insightLines = doc.splitTextToSize(insightText, maxWidth);
+  for (const line of insightLines) {
+    if (y > 270) {
+      doc.addPage();
+      y = margin;
+    }
+    doc.text(line, margin, y);
+    y += lineHeight;
+  }
+  if (result.sources && Array.isArray(result.sources) && result.sources.length > 0) {
+    y += lineHeight;
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Based on ${result.sources.length} source(s) from Hye Aero's database.`, margin, y);
+    doc.setTextColor(0, 0, 0);
+  }
+  doc.save(`hyeaero-resale-advisory-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
 type TabId = "consultant" | "comparison" | "estimator" | "resale";
 
 export type DashboardCenterContentProps = {
@@ -537,11 +586,23 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                 </div>
               )}
               {resaleResult && !resaleLoading && (
-                <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                  {resaleResult.insight}
-                  {resaleResult.sources && Array.isArray(resaleResult.sources) && resaleResult.sources.length > 0 && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">Based on {resaleResult.sources.length} source(s) from Hye Aero&apos;s database.</p>
-                  )}
+                <div className="mt-3">
+                  <div className="flex items-center justify-end gap-2 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => downloadResalePdf(resaleQuery, resaleResult)}
+                      className="text-sm font-medium text-slate-600 dark:text-slate-300 rounded-md py-1.5 px-2 transition-all duration-200 ease-out hover:text-accent hover:bg-accent/10 dark:hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:ring-inset active:scale-[0.98] inline-flex items-center gap-1.5"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download PDF
+                    </button>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                    {resaleResult.insight}
+                    {resaleResult.sources && Array.isArray(resaleResult.sources) && resaleResult.sources.length > 0 && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">Based on {resaleResult.sources.length} source(s) from Hye Aero&apos;s database.</p>
+                    )}
+                  </div>
                 </div>
               )}
               {resaleResult?.error && !resaleLoading && (

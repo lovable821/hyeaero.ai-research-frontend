@@ -3,7 +3,7 @@
  *   node scripts/get-demo-values.js
  * Or from repo root: node frontend/scripts/get-demo-values.js
  */
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://88.99.198.243:8000";
 
 async function get(url) {
   const res = await fetch(url);
