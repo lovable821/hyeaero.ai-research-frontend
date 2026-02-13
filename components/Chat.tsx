@@ -1,0 +1,266 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { jsPDF } from "jspdf";
+import { Bot, Send, Download } from "lucide-react";
+
+export type SourceItem = { entity_type?: string; entity_id?: string | null; score?: number };
+export type DataUsed = Record<string, number>;
+
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  sources?: SourceItem[];
+  data_used?: DataUsed | null;
+};
+
+type ChatProps = {
+  onQuerySent?: (query: string) => void;
+  suggestedQuery?: string | null;
+  onSuggestedQueryConsumed?: () => void;
+};
+
+const WELCOME = `Hello! I'm your AI research consultant powered by Hye Aero's data. I can help you with:
+
+• Aircraft model research and specifications
+• Market value comparisons and trends
+• Price estimations and valuations
+• Resale potential analysis`;
+
+function formatDataUsed(data_used: DataUsed): string {
+  const labels: Record<string, string> = {
+    "aircraft listing": "listings",
+    "aircraft_listing": "listings",
+    "aircraft sale": "sales",
+    "aircraft_sale": "sales",
+    "aircraft": "aircraft",
+    "faa registration": "FAA registrations",
+    "faa_registration": "FAA registrations",
+    document: "documents",
+  };
+  const parts = Object.entries(data_used)
+    .filter(([, n]) => n > 0)
+    .map(([k, n]) => `${n} ${labels[k] || k.replace(/_/g, " ")}`);
+  if (parts.length === 0) return "";
+  return `Based on ${parts.join(", ")} from Hye Aero's database.`;
+}
+
+function wrapText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
+  const lines = doc.splitTextToSize(text, maxWidth);
+  lines.forEach((line: string) => {
+    doc.text(line, x, y);
+    y += lineHeight;
+  });
+  return y;
+}
+
+function downloadReport(messages: Message[]) {
+  const doc = new jsPDF({ format: "a4", unit: "mm" });
+  const margin = 20;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const maxWidth = pageWidth - margin * 2;
+  let y = margin;
+  const lineHeight = 6;
+  doc.setFontSize(16);
+  doc.text("HyeAero.AI — Research Chat Report", margin, y);
+  y += 10;
+  doc.setFontSize(10);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+  y += lineHeight * 2;
+  doc.setFontSize(11);
+  for (const m of messages) {
+    if (y > 270) {
+      doc.addPage();
+      y = margin;
+    }
+    const label = m.role === "user" ? "You" : "Consultant";
+    doc.setFont("helvetica", "bold");
+    doc.text(label, margin, y);
+    y += lineHeight;
+    doc.setFont("helvetica", "normal");
+    y = wrapText(doc, m.content, margin, y, maxWidth, lineHeight) + lineHeight;
+  }
+  doc.save(`hyeaero-research-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+const MAX_RETRIES = 1;
+
+export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryConsumed }: ChatProps) {
+  const [messages, setMessages] = useState<Message[]>([
+    { id: "0", role: "assistant", content: WELCOME },
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // When user clicks a "Try these" suggestion in the sidebar, fill the input and clear the suggestion
+  useEffect(() => {
+    if (suggestedQuery != null && suggestedQuery.trim()) {
+      setInput(suggestedQuery.trim());
+      onSuggestedQueryConsumed?.();
+    }
+  }, [suggestedQuery, onSuggestedQueryConsumed]);
+
+  // Auto-scroll to bottom when new messages or loading state appear
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, isLoading]);
+
+  const sendMessage = async (retryCount = 0) => {
+    const text = input.trim();
+    if (!text || isLoading) return;
+
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    onQuerySent?.(text);
+    setIsLoading(true);
+
+    try {
+      const history = messages
+        .slice(-12)
+        .map((m) => ({ role: m.role, content: m.content }));
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: text, history }),
+      });
+      const data = await res.json();
+      const answer = data?.answer ?? "I couldn't get a response. Please try again.";
+      const sources = Array.isArray(data?.sources) ? data.sources : [];
+      const data_used = data?.data_used && typeof data.data_used === "object" ? data.data_used : null;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: answer,
+          sources: sources.length ? sources : undefined,
+          data_used: data_used || undefined,
+        },
+      ]);
+    } catch {
+      const shouldRetry = retryCount < MAX_RETRIES;
+      const errorMsg =
+        "Sorry, the request failed. Check your connection and that the backend is running (see README).";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: shouldRetry ? "Retrying…" : errorMsg,
+        },
+      ]);
+      if (shouldRetry) {
+        setTimeout(() => sendMessage(retryCount + 1), 1500);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const handleDownloadPdf = () => {
+    downloadReport(messages);
+  };
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-slate-50/50">
+      {/* Only this message area scrolls; input stays fixed at bottom */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-6 overscroll-contain"
+        role="log"
+        aria-live="polite"
+        aria-label="Chat messages"
+      >
+        <div className="max-w-3xl mx-auto space-y-8">
+          {messages.map((m) =>
+            m.role === "user" ? (
+              <div key={m.id} className="flex justify-end gap-3">
+                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-5 py-3.5 text-white text-[15px] leading-relaxed shadow-md">
+                  {m.content}
+                </div>
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0 flex items-center justify-center text-primary text-xs font-semibold" aria-hidden title="You">
+                  U
+                </div>
+              </div>
+            ) : (
+              <div key={m.id} className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-accent flex-shrink-0 flex items-center justify-center text-white" aria-hidden>
+                  <Bot className="w-4 h-4" />
+                </div>
+                <div className="max-w-[85%] space-y-1.5">
+                  <div className="rounded-2xl rounded-bl-md bg-white px-5 py-3.5 text-slate-800 text-[15px] leading-relaxed shadow-sm border border-slate-100 whitespace-pre-wrap">
+                    {m.content}
+                  </div>
+                  {m.data_used && Object.keys(m.data_used).length > 0 && (
+                    <p className="pl-1 text-xs text-slate-500 italic">
+                      {formatDataUsed(m.data_used)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )
+          )}
+          {isLoading && (
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-accent flex-shrink-0 flex items-center justify-center text-white animate-pulse" aria-hidden>
+                <Bot className="w-4 h-4" />
+              </div>
+              <div className="rounded-2xl rounded-bl-md bg-white px-5 py-3.5 text-slate-500 text-[15px] border border-slate-100 shadow-sm">
+                Searching Hye Aero data…
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} aria-hidden />
+        </div>
+      </div>
+
+      {/* Fixed input area at bottom of chat card (never scrolls away) */}
+      <div className="flex-shrink-0 px-4 py-4 bg-white border-t border-slate-200">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent transition-all">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask about aircraft models, market values, or comparables…"
+              rows={1}
+              className="flex-1 min-h-[46px] max-h-36 resize-none border-0 bg-transparent px-1 py-2.5 text-[15px] text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0"
+              disabled={isLoading}
+              aria-label="Message"
+            />
+            <button
+              type="button"
+              onClick={() => sendMessage(0)}
+              disabled={!input.trim() || isLoading}
+              className="flex-shrink-0 rounded-xl bg-accent p-2.5 text-white hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Send"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-xs text-slate-400">Enter to send · Shift+Enter for new line</span>
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              className="text-xs font-medium text-slate-500 hover:text-accent transition-colors inline-flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download PDF report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,52 +1,32 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
-  
-  --color-accent-50: #fef3c7;
-  --color-accent-100: #fde68a;
-  --color-accent-200: #fcd34d;
-  --color-accent-300: #fbbf24;
-  --color-accent-400: #f59e0b;
-  --color-accent-500: #d97706;
-  --color-accent-600: #b45309;
-  --color-accent-700: #92400e;
-  --color-accent-800: #78350f;
-  --color-accent-900: #451a03;
+:root {
+  --font-heading: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-body: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-code: Arial, "Helvetica Neue", Helvetica, sans-serif;
+
+  --primary: #0f2847;
+  --primary-light: #1e4976;
+  --accent: #3b82f6;
+  --accent-light: #60a5fa;
+  --surface: #f8fafc;
+  --card: #ffffff;
 }
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-  }
+body {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
-@layer base {
-  body {
-    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
+.font-heading {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
-/* Hide scrollbar for tab navigation */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.font-body {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.font-code {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }

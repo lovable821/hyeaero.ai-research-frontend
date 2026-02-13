@@ -1,0 +1,245 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { MessageCircle, BarChart3, Calculator, Users } from "lucide-react";
+import ChatSidebar from "./ChatSidebar";
+import DashboardLayout from "./DashboardLayout";
+import DashboardCenterContent from "./DashboardCenterContent";
+import { postMarketComparison, postPriceEstimate, postResaleAdvisory, getAircraftModels } from "@/lib/api";
+import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse } from "@/lib/api";
+
+
+type TabId = "consultant" | "comparison" | "estimator" | "resale";
+
+const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
+  { id: "consultant", label: "Ask Consultant", icon: <MessageCircle className="w-5 h-5 flex-shrink-0" /> },
+  { id: "comparison", label: "Market Comparison", icon: <BarChart3 className="w-5 h-5 flex-shrink-0" /> },
+  { id: "estimator", label: "Price Estimator", icon: <Calculator className="w-5 h-5 flex-shrink-0" /> },
+  { id: "resale", label: "Resale Advisory", icon: <Users className="w-5 h-5 flex-shrink-0" /> },
+];
+
+const VALUE_BREAKDOWN = [
+  { label: "Base Aircraft Value", value: "$38.5M", positive: false },
+  { label: "Low Flight Hours Premium", value: "+$2.8M", positive: true },
+  { label: "Maintenance Status Adjustment", value: "+$1.5M", positive: true },
+  { label: "Market Demand Factor", value: "+$0.5M", positive: true },
+  { label: "Regional Adjustment", value: "-$1.0M", positive: false },
+];
+
+type DashboardProps = {
+  isAuthenticated: boolean;
+};
+
+const MAX_RECENT_QUERIES = 10;
+
+export default function Dashboard({ isAuthenticated }: DashboardProps) {
+  const [activeTab, setActiveTab] = useState<TabId>("consultant");
+  const [recentQueries, setRecentQueries] = useState<string[]>([]);
+  const [suggestedQuery, setSuggestedQuery] = useState<string | null>(null);
+  const [selectedModels, setSelectedModels] = useState<Set<string>>(new Set());
+  const [region, setRegion] = useState("Global");
+  const [timePeriod, setTimePeriod] = useState("Last 30 Days");
+  const [comparisonFilters, setComparisonFilters] = useState<{ maxHours: string; minYear: string; maxYear: string }>({ maxHours: "", minYear: "", maxYear: "" });
+  const [metrics, setMetrics] = useState({ marketValue: true, priceTrends: true, transactionVolume: false, daysOnMarket: true });
+  const [estimatorForm, setEstimatorForm] = useState({ model: "", year: "2015", flightHours: "45000", flightCycles: "28000", location: "North America" });
+
+  const [comparisonResult, setComparisonResult] = useState<MarketComparisonResponse | null>(null);
+  const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [comparisonError, setComparisonError] = useState<string | null>(null);
+
+  const [priceResult, setPriceResult] = useState<PriceEstimateResponse | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
+
+  const [resaleQuery, setResaleQuery] = useState("");
+  const [resaleResult, setResaleResult] = useState<ResaleAdvisoryResponse | null>(null);
+  const [resaleLoading, setResaleLoading] = useState(false);
+
+  const [aircraftModels, setAircraftModels] = useState<string[]>([]);
+  const [aircraftModelsLoading, setAircraftModelsLoading] = useState(true);
+  const [aircraftModelsError, setAircraftModelsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAircraftModelsLoading(true);
+    setAircraftModelsError(null);
+    getAircraftModels()
+      .then((data) => {
+        if (!cancelled) setAircraftModels(data.models || []);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setAircraftModelsError(e instanceof Error ? e.message : "Failed to load models");
+          setAircraftModels([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setAircraftModelsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const toggleModel = (model: string) => {
+    setSelectedModels((prev) => {
+      const next = new Set(prev);
+      if (next.has(model)) next.delete(model);
+      else next.add(model);
+      return next;
+    });
+  };
+
+  const handleGenerateComparison = async () => {
+    const models = Array.from(selectedModels);
+    if (models.length < 1) return;
+    setComparisonLoading(true);
+    setComparisonError(null);
+    setComparisonResult(null);
+    try {
+      const maxHours = comparisonFilters.maxHours.trim() ? parseFloat(comparisonFilters.maxHours) : undefined;
+      const minYear = comparisonFilters.minYear.trim() ? parseInt(comparisonFilters.minYear, 10) : undefined;
+      const maxYear = comparisonFilters.maxYear.trim() ? parseInt(comparisonFilters.maxYear, 10) : undefined;
+      const res = await postMarketComparison({
+        models,
+        region: region === "Global" ? undefined : region,
+        max_hours: maxHours != null && !Number.isNaN(maxHours) ? maxHours : undefined,
+        min_year: minYear != null && !Number.isNaN(minYear) ? minYear : undefined,
+        max_year: maxYear != null && !Number.isNaN(maxYear) ? maxYear : undefined,
+        limit: 50,
+      });
+      setComparisonResult(res);
+    } catch (e) {
+      setComparisonError(e instanceof Error ? e.message : "Request failed");
+    } finally {
+      setComparisonLoading(false);
+    }
+  };
+
+  const handlePriceEstimate = async () => {
+    setPriceLoading(true);
+    setPriceResult(null);
+    try {
+      const res = await postPriceEstimate({
+        model: estimatorForm.model || undefined,
+        year: estimatorForm.year ? parseInt(estimatorForm.year, 10) : undefined,
+        flight_hours: estimatorForm.flightHours ? parseFloat(estimatorForm.flightHours) : undefined,
+        flight_cycles: estimatorForm.flightCycles ? parseInt(estimatorForm.flightCycles, 10) : undefined,
+        region: estimatorForm.location === "North America" ? undefined : estimatorForm.location,
+      });
+      setPriceResult(res);
+    } catch {
+      setPriceResult({
+        estimated_value_millions: null,
+        range_low_millions: null,
+        range_high_millions: null,
+        confidence_pct: 0,
+        market_demand: "Unknown",
+        vs_average_pct: null,
+        time_to_sale_days: null,
+        breakdown: [],
+        error: "Request failed",
+      });
+    } finally {
+      setPriceLoading(false);
+    }
+  };
+
+  const addRecentQuery = (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    setRecentQueries((prev) => {
+      const next = [trimmed, ...prev.filter((q) => q !== trimmed)].slice(0, MAX_RECENT_QUERIES);
+      return next;
+    });
+  };
+
+  const handleResaleAdvisory = async () => {
+    if (!resaleQuery.trim()) return;
+    setResaleLoading(true);
+    setResaleResult(null);
+    try {
+      const res = await postResaleAdvisory({ query: resaleQuery.trim() });
+      setResaleResult(res);
+    } catch {
+      setResaleResult({ insight: "Unable to load advisory.", error: "Request failed" });
+    } finally {
+      setResaleLoading(false);
+    }
+  };
+
+  return React.createElement(
+    DashboardLayout,
+    null,
+    React.createElement(
+      "aside",
+      {
+        className: "w-56 flex-shrink-0 border-r border-slate-200 bg-slate-50/70 flex flex-col py-4",
+        "aria-label": "Research navigation",
+      },
+      React.createElement("div", { className: "px-4 mb-4" },
+        React.createElement("h1", { className: "font-heading text-lg font-semibold text-slate-900" }, "Research"),
+        React.createElement("p", { className: "text-xs text-slate-500 mt-0.5" }, "HyeAero.AI")
+      ),
+      React.createElement(
+        "nav",
+        { className: "flex flex-col gap-0.5 px-2" },
+        TABS.map((tab) =>
+          React.createElement(
+            "button",
+            {
+              key: tab.id,
+              type: "button",
+              onClick: () => setActiveTab(tab.id),
+              className: `flex items-center gap-3 py-2.5 px-3 rounded-lg text-left text-sm font-medium transition-colors ${activeTab === tab.id ? "bg-accent text-white shadow-sm" : "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900"}`,
+            },
+            React.createElement("span", { className: "flex-shrink-0" }, tab.icon),
+            React.createElement("span", null, tab.label)
+          )
+        )
+      )
+    ),
+    React.createElement(
+      "section",
+      { className: "flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden border-r border-slate-200" },
+      React.createElement(DashboardCenterContent, {
+        activeTab,
+        isAuthenticated,
+        selectedModels,
+        toggleModel,
+        onSelectAllModels: () => setSelectedModels(new Set(aircraftModels)),
+        onDeselectAllModels: () => setSelectedModels(new Set()),
+        region,
+        setRegion,
+        timePeriod,
+        setTimePeriod,
+        comparisonFilters,
+        setComparisonFilters,
+        aircraftModels,
+        aircraftModelsLoading,
+        aircraftModelsError,
+        metrics,
+        setMetrics,
+        estimatorForm,
+        setEstimatorForm,
+        comparisonResult,
+        comparisonLoading,
+        comparisonError,
+        handleGenerateComparison,
+        priceResult,
+        priceLoading,
+        handlePriceEstimate,
+        resaleQuery,
+        setResaleQuery,
+        resaleResult,
+        resaleLoading,
+        handleResaleAdvisory,
+        onConsultantQuerySent: addRecentQuery,
+        suggestedQuery,
+        onSuggestedQueryConsumed: () => setSuggestedQuery(null),
+      })
+    ),
+    React.createElement(
+      "aside",
+      { className: "hidden lg:flex w-72 flex-shrink-0 flex-col border-l border-slate-200 bg-slate-50/50 overflow-y-auto py-4 px-4" },
+      React.createElement(ChatSidebar, { recentQueries, onSuggestedQueryClick: (q) => setSuggestedQuery(q) })
+    )
+  );
+}
