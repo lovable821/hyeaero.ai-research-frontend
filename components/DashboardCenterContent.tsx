@@ -8,27 +8,58 @@ import { postMarketComparison, postPriceEstimate, postResaleAdvisory } from "@/l
 import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse } from "@/lib/api";
 
 function downloadComparisonPdf(result: MarketComparisonResponse, selectedModels: Set<string>, region: string) {
-  const doc = new jsPDF({ format: "a4", unit: "mm" });
-  const margin = 18;
+  const doc = new jsPDF({ format: "a4", unit: "mm", orientation: "landscape" });
+  const margin = 14;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const contentWidth = pageWidth - margin * 2;
   let y = margin;
+
   doc.setFontSize(16);
   doc.text("HyeAero.AI — Market Comparison", margin, y);
   y += 8;
-  doc.setFontSize(10);
-  doc.text(`Models: ${Array.from(selectedModels).join(", ")} | Region: ${region} | Generated: ${new Date().toLocaleString()}`, margin, y);
-  y += 6;
-  doc.text(result.summary || "", margin, y);
-  y += 10;
-  const cols = ["Manufacturer / Model", "Year", "Ask Price", "Sold Price", "Hours", "Location", "Status", "Days on Mkt", "Source"];
-  const rowHeight = 7;
-  const colWidths = [38, 12, 24, 24, 18, 32, 18, 18, 22];
   doc.setFontSize(9);
+  const subtitle = `Models: ${Array.from(selectedModels).join(", ")} | Region: ${region} | Generated: ${new Date().toLocaleString()}`;
+  const subtitleLines = doc.splitTextToSize(subtitle, contentWidth);
+  subtitleLines.forEach((line: string) => {
+    doc.text(line, margin, y);
+    y += 5;
+  });
+  y += 2;
+  doc.text(result.summary || "", margin, y);
+  y += 8;
+
+  const cols = ["Manufacturer / Model", "Year", "Ask Price", "Sold Price", "Hours", "Location", "Status", "Days on Mkt", "Source"];
+  const rowHeight = 6;
+  const colWidths = [52, 10, 22, 22, 16, 48, 22, 14, 22];
+  const colMaxLen = [32, 4, 12, 12, 8, 28, 12, 6, 14];
+  const totalColWidth = colWidths.reduce((a, b) => a + b, 0);
+  if (totalColWidth > contentWidth) {
+    const scale = contentWidth / totalColWidth;
+    colWidths.forEach((w, i) => { colWidths[i] = Math.floor(w * scale); });
+  }
+
+  doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  cols.forEach((c, i) => doc.text(c, margin + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
+  let x = margin;
+  cols.forEach((c, i) => {
+    doc.text(c, x + 1, y);
+    x += colWidths[i];
+  });
   y += rowHeight;
   doc.setFont("helvetica", "normal");
-  for (const row of result.rows.slice(0, 25)) {
-    if (y > 270) { doc.addPage(); y = margin; }
+
+  const drawCell = (text: string, cx: number, cy: number, w: number, maxLen: number) => {
+    const s = String(text);
+    const t = s.length <= maxLen ? s : s.slice(0, maxLen - 1) + "…";
+    doc.text(t, cx + 1, cy);
+  };
+
+  for (const row of result.rows.slice(0, 40)) {
+    if (y > pageHeight - 18) {
+      doc.addPage("a4", "landscape");
+      y = margin;
+    }
     const manufacturerModel = [row.manufacturer, row.model].filter(Boolean).join(" ") || "—";
     const askPrice = row.ask_price != null ? `$${Number(row.ask_price).toLocaleString()}` : "—";
     const soldPrice = row.sold_price != null ? `$${Number(row.sold_price).toLocaleString()}` : "—";
@@ -38,9 +69,9 @@ function downloadComparisonPdf(result: MarketComparisonResponse, selectedModels:
     const daysOnMarket = row.days_on_market != null ? String(row.days_on_market) : "—";
     const source = (row.source_platform as string) || "—";
     const cells = [manufacturerModel, row.manufacturer_year != null ? String(row.manufacturer_year) : "—", askPrice, soldPrice, hours, location, status, daysOnMarket, source];
-    let x = margin;
+    x = margin;
     cells.forEach((cell, i) => {
-      doc.text(String(cell).slice(0, 20), x, y);
+      drawCell(cell, x, y, colWidths[i], colMaxLen[i]);
       x += colWidths[i];
     });
     y += rowHeight;
