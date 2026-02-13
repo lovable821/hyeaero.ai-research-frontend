@@ -5,7 +5,7 @@ import { MessageCircle, BarChart3, Calculator, Users } from "lucide-react";
 import ChatSidebar from "./ChatSidebar";
 import DashboardLayout from "./DashboardLayout";
 import DashboardCenterContent from "./DashboardCenterContent";
-import { postMarketComparison, postPriceEstimate, postResaleAdvisory, getAircraftModels } from "@/lib/api";
+import { postMarketComparison, postPriceEstimate, postResaleAdvisory, getAircraftModels, getPriceEstimateModels } from "@/lib/api";
 import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse } from "@/lib/api";
 
 
@@ -58,6 +58,11 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
   const [aircraftModelsLoading, setAircraftModelsLoading] = useState(true);
   const [aircraftModelsError, setAircraftModelsError] = useState<string | null>(null);
 
+  const [estimatorModels, setEstimatorModels] = useState<string[]>([]);
+  const [estimatorModelsLoading, setEstimatorModelsLoading] = useState(true);
+  const [samplePriceRequest, setSamplePriceRequest] = useState<{ model: string; region: string } | null>(null);
+  const [priceTestPayloads, setPriceTestPayloads] = useState<Array<{ model: string; region: string }>>([]);
+
   useEffect(() => {
     let cancelled = false;
     setAircraftModelsLoading(true);
@@ -74,6 +79,26 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
       })
       .finally(() => {
         if (!cancelled) setAircraftModelsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Price Estimator: load models from aircraft_sales so dropdown options match DB and return results
+  useEffect(() => {
+    let cancelled = false;
+    setEstimatorModelsLoading(true);
+    getPriceEstimateModels()
+      .then((data) => {
+        if (!cancelled) {
+          setEstimatorModels(data.models || []);
+          setSamplePriceRequest(data.sample_request ?? null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setEstimatorModels([]);
+      })
+      .finally(() => {
+        if (!cancelled) setEstimatorModelsLoading(false);
       });
     return () => { cancelled = true; };
   }, []);
@@ -122,7 +147,7 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         year: estimatorForm.year ? parseInt(estimatorForm.year, 10) : undefined,
         flight_hours: estimatorForm.flightHours ? parseFloat(estimatorForm.flightHours) : undefined,
         flight_cycles: estimatorForm.flightCycles ? parseInt(estimatorForm.flightCycles, 10) : undefined,
-        region: estimatorForm.location === "North America" ? undefined : estimatorForm.location,
+        region: estimatorForm.location && estimatorForm.location !== "Global" ? estimatorForm.location : undefined,
       });
       setPriceResult(res);
     } catch {
@@ -165,18 +190,22 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
     }
   };
 
+  const navButtonClass = (tabId: TabId) =>
+    `flex items-center justify-center gap-2 py-3 px-3 rounded-lg text-center text-xs font-medium min-h-touch transition-all duration-200 ease-out ${activeTab === tabId ? "bg-accent text-white shadow-sm" : "text-slate-600 dark:text-slate-300 hover:bg-accent/10 dark:hover:bg-accent/20 active:bg-accent/15"}`;
+
   return React.createElement(
     DashboardLayout,
     null,
+    /* Left nav: desktop only */
     React.createElement(
       "aside",
       {
-        className: "w-56 flex-shrink-0 border-r border-slate-200 bg-slate-50/70 flex flex-col py-4",
+        className: "hidden lg:flex w-56 flex-shrink-0 border-r border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900 flex-col py-4 transition-colors duration-200",
         "aria-label": "Research navigation",
       },
       React.createElement("div", { className: "px-4 mb-4" },
-        React.createElement("h1", { className: "font-heading text-lg font-semibold text-slate-900" }, "Research"),
-        React.createElement("p", { className: "text-xs text-slate-500 mt-0.5" }, "HyeAero.AI")
+        React.createElement("h1", { className: "font-heading text-lg font-semibold text-slate-800 dark:text-slate-200" }, "Research"),
+        React.createElement("p", { className: "text-xs text-slate-500 dark:text-slate-400 mt-0.5" }, "HyeAero.AI")
       ),
       React.createElement(
         "nav",
@@ -188,7 +217,7 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
               key: tab.id,
               type: "button",
               onClick: () => setActiveTab(tab.id),
-              className: `flex items-center gap-3 py-2.5 px-3 rounded-lg text-left text-sm font-medium transition-colors ${activeTab === tab.id ? "bg-accent text-white shadow-sm" : "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900"}`,
+              className: `flex items-center gap-3 py-2.5 px-3 rounded-lg text-left text-sm font-medium min-h-touch transition-all duration-200 ease-out ${activeTab === tab.id ? "bg-accent text-white shadow-sm ring-2 ring-accent/25" : "text-slate-600 dark:text-slate-300 hover:bg-accent/10 dark:hover:bg-accent/20 hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:ring-inset active:scale-[0.99] active:bg-accent/15"}`,
             },
             React.createElement("span", { className: "flex-shrink-0" }, tab.icon),
             React.createElement("span", null, tab.label)
@@ -196,9 +225,10 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         )
       )
     ),
+    /* Main content: full width on mobile, padding-bottom for bottom nav */
     React.createElement(
       "section",
-      { className: "flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden border-r border-slate-200" },
+      { className: "flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pb-mobile-nav lg:pb-0 transition-colors duration-200" },
       React.createElement(DashboardCenterContent, {
         activeTab,
         isAuthenticated,
@@ -215,6 +245,10 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         aircraftModels,
         aircraftModelsLoading,
         aircraftModelsError,
+        estimatorModels,
+        estimatorModelsLoading,
+        samplePriceRequest,
+        priceTestPayloads,
         metrics,
         setMetrics,
         estimatorForm,
@@ -238,8 +272,31 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
     ),
     React.createElement(
       "aside",
-      { className: "hidden lg:flex w-72 flex-shrink-0 flex-col border-l border-slate-200 bg-slate-50/50 overflow-y-auto py-4 px-4" },
+      { className: "hidden lg:flex w-72 flex-shrink-0 flex-col border-l border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900 overflow-y-auto py-4 px-4 scrollbar-ui transition-colors duration-200" },
       React.createElement(ChatSidebar, { recentQueries, onSuggestedQueryClick: (q) => setSuggestedQuery(q) })
+    ),
+    /* Mobile bottom navigation: touch-friendly, theme colors */
+    React.createElement(
+      "nav",
+      {
+        className: "lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch justify-around bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 shadow-[0_-1px_6px_rgba(15,40,71,0.06)] dark:shadow-[0_-1px_6px_rgba(0,0,0,0.2)] transition-colors duration-200",
+        "aria-label": "Research tabs",
+        style: { paddingBottom: "max(env(safe-area-inset-bottom), 8px)" },
+      },
+      TABS.map((tab) =>
+        React.createElement(
+          "button",
+          {
+            key: tab.id,
+            type: "button",
+            onClick: () => setActiveTab(tab.id),
+            className: navButtonClass(tab.id),
+            "aria-current": activeTab === tab.id ? "page" : undefined,
+          },
+          React.createElement("span", { className: "flex-shrink-0" }, tab.icon),
+          React.createElement("span", { className: "hidden sm:inline truncate max-w-[4rem]" }, tab.label)
+        )
+      )
     )
   );
 }

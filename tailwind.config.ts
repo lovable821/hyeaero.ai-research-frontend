@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
+import { theme } from "./lib/theme";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,14 +11,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: { DEFAULT: "#0f2847", light: "#1e4976" },
-        accent: { DEFAULT: "#3b82f6", light: "#60a5fa" },
-        surface: { DEFAULT: "#f8fafc", card: "#ffffff" },
+        primary: { DEFAULT: theme.colors.primary, light: theme.colors.primaryLight },
+        accent: { DEFAULT: theme.colors.accent, light: theme.colors.accentLight },
+        surface: { DEFAULT: theme.colors.surface, card: theme.colors.card },
       },
       fontFamily: {
-        heading: ["var(--font-heading)", "Arial", "Helvetica", "sans-serif"],
-        body: ["var(--font-body)", "Arial", "Helvetica", "sans-serif"],
-        code: ["var(--font-code)", "Arial", "Helvetica", "sans-serif"],
+        sans: ["var(--font-manrope)", "sans-serif"],
+        heading: ["var(--font-manrope)", "sans-serif"],
+        body: ["var(--font-manrope)", "sans-serif"],
+        code: ["var(--font-manrope)", "sans-serif"],
+      },
+      transitionDuration: {
+        ui: theme.transition.ui,
+        "ui-slow": theme.transition.uiSlow,
+      },
+      transitionTimingFunction: {
+        "out-smooth": theme.transition.easeOut,
+        "in-out-smooth": theme.transition.easeInOut,
+      },
+      minHeight: {
+        touch: theme.touchTargetMin,
+      },
+      spacing: {
+        "mobile-nav": theme.mobileNavHeight,
       },
     },
   },

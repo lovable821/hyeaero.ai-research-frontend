@@ -16,6 +16,23 @@ export async function getAircraftModels(): Promise<AircraftModelsResponse> {
   return res.json() as Promise<AircraftModelsResponse>;
 }
 
+/** Models that have at least one sale in aircraft_sales — use for Price Estimator dropdown so selections return results. */
+export type PriceEstimateModelsResponse = {
+  models: string[];
+  sample_request?: { model: string; region: string } | null;
+  /** Example payloads from DB (model + region) that return a result. Use for testing. */
+  test_payloads?: Array<{ model: string; region: string }>;
+};
+
+export async function getPriceEstimateModels(): Promise<PriceEstimateModelsResponse> {
+  const res = await fetch(`${API_URL}/api/price-estimate-models`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error((err as { detail?: string }).detail || `API ${res.status}`);
+  }
+  return res.json() as Promise<PriceEstimateModelsResponse>;
+}
+
 type ApiOptions = {
   method?: string;
   body?: Record<string, unknown>;

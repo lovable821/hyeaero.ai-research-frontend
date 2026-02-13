@@ -173,10 +173,10 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-slate-50/50">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-slate-50/50 dark:bg-slate-900/50 transition-colors duration-200">
       {/* Only this message area scrolls; input stays fixed at bottom */}
       <div
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-6 overscroll-contain"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-4 sm:py-6 overscroll-contain scrollbar-ui"
         role="log"
         aria-live="polite"
         aria-label="Chat messages"
@@ -185,7 +185,7 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
           {messages.map((m) =>
             m.role === "user" ? (
               <div key={m.id} className="flex justify-end gap-3">
-                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-5 py-3.5 text-white text-[15px] leading-relaxed shadow-md">
+                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary dark:bg-primary-light px-5 py-3.5 text-white text-[15px] leading-relaxed shadow-md">
                   {m.content}
                 </div>
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0 flex items-center justify-center text-primary text-xs font-semibold" aria-hidden title="You">
@@ -198,11 +198,11 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
                   <Bot className="w-4 h-4" />
                 </div>
                 <div className="max-w-[85%] space-y-1.5">
-                  <div className="rounded-2xl rounded-bl-md bg-white px-5 py-3.5 text-slate-800 text-[15px] leading-relaxed shadow-sm border border-slate-100 whitespace-pre-wrap">
+                  <div className="rounded-2xl rounded-bl-md bg-white dark:bg-slate-800 px-5 py-3.5 text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed shadow-sm border border-slate-100 dark:border-slate-600 whitespace-pre-wrap">
                     {m.content}
                   </div>
                   {m.data_used && Object.keys(m.data_used).length > 0 && (
-                    <p className="pl-1 text-xs text-slate-500 italic">
+                    <p className="pl-1 text-xs text-slate-500 dark:text-slate-400 italic">
                       {formatDataUsed(m.data_used)}
                     </p>
                   )}
@@ -215,7 +215,7 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
               <div className="w-8 h-8 rounded-full bg-accent flex-shrink-0 flex items-center justify-center text-white animate-pulse" aria-hidden>
                 <Bot className="w-4 h-4" />
               </div>
-              <div className="rounded-2xl rounded-bl-md bg-white px-5 py-3.5 text-slate-500 text-[15px] border border-slate-100 shadow-sm">
+              <div className="rounded-2xl rounded-bl-md bg-white dark:bg-slate-800 px-5 py-3.5 text-slate-500 dark:text-slate-400 text-[15px] border border-slate-100 dark:border-slate-600 shadow-sm">
                 Searching Hye Aero data…
               </div>
             </div>
@@ -225,16 +225,16 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
       </div>
 
       {/* Fixed input area at bottom of chat card (never scrolls away) */}
-      <div className="flex-shrink-0 px-4 py-4 bg-white border-t border-slate-200">
+      <div className="flex-shrink-0 px-3 sm:px-4 py-3 sm:py-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 transition-colors duration-200">
         <div className="max-w-3xl mx-auto">
-          <div className="flex gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent transition-all">
+          <div className="flex gap-2 rounded-2xl border border-slate-200 dark:border-slate-600 bg-slate-50/80 dark:bg-slate-800/80 px-3 sm:px-4 py-2.5 shadow-sm transition-all duration-200 ease-out focus-within:bg-white dark:focus-within:bg-slate-800 focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent/40">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask about aircraft models, market values, or comparables…"
               rows={1}
-              className="flex-1 min-h-[46px] max-h-36 resize-none border-0 bg-transparent px-1 py-2.5 text-[15px] text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0"
+              className="flex-1 min-h-[44px] sm:min-h-[46px] max-h-36 resize-none border-0 bg-transparent px-1 py-2.5 text-[15px] text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-0"
               disabled={isLoading}
               aria-label="Message"
             />
@@ -242,18 +242,18 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
               type="button"
               onClick={() => sendMessage(0)}
               disabled={!input.trim() || isLoading}
-              className="flex-shrink-0 rounded-xl bg-accent p-2.5 text-white hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex-shrink-0 rounded-xl bg-accent p-3 sm:p-2.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center text-white transition-all duration-200 ease-out hover:bg-accent-light hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 active:scale-95 active:bg-accent-light disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-accent disabled:hover:shadow-none"
               aria-label="Send"
             >
               <Send className="w-5 h-5" />
             </button>
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-xs text-slate-400">Enter to send · Shift+Enter for new line</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500">Enter to send · Shift+Enter for new line</span>
             <button
               type="button"
               onClick={handleDownloadPdf}
-              className="text-xs font-medium text-slate-500 hover:text-accent transition-colors inline-flex items-center gap-1.5"
+              className="text-xs font-medium text-slate-500 dark:text-slate-400 rounded-md py-1.5 px-2 transition-all duration-200 ease-out hover:text-accent hover:bg-accent/10 dark:hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:ring-inset active:scale-[0.98] active:bg-accent/15 inline-flex items-center gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               Download PDF report

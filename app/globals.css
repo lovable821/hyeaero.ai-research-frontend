@@ -2,31 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Theme variables – keep in sync with lib/theme.ts
+ * Font: Manrope is loaded via next/font in layout.tsx and exposes --font-manrope.
+ */
 :root {
-  --font-heading: Arial, "Helvetica Neue", Helvetica, sans-serif;
-  --font-body: Arial, "Helvetica Neue", Helvetica, sans-serif;
-  --font-code: Arial, "Helvetica Neue", Helvetica, sans-serif;
-
   --primary: #0f2847;
   --primary-light: #1e4976;
   --accent: #3b82f6;
   --accent-light: #60a5fa;
   --surface: #f8fafc;
   --card: #ffffff;
+
+  --transition-ui: 200ms;
+  --transition-slow: 300ms;
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --hover-overlay: rgba(59, 130, 246, 0.08);
+  --active-overlay: rgba(59, 130, 246, 0.12);
+  --focus-ring: rgba(59, 130, 246, 0.28);
+  --border-hover: rgba(59, 130, 246, 0.35);
+  --selection-bg: rgba(59, 130, 246, 0.18);
+  --selection-text: #1e4976;
+
+  --mobile-nav-height: 56px;
+  --touch-min: 44px;
 }
 
-body {
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+/* Dark theme – same variables, different values */
+.dark {
+  --primary: #1e3a5f;
+  --primary-light: #2d4a6f;
+  --accent: #60a5fa;
+  --accent-light: #93c5fd;
+  --surface: #0f172a;
+  --card: #1e293b;
+  --hover-overlay: rgba(96, 165, 250, 0.1);
+  --active-overlay: rgba(96, 165, 250, 0.15);
+  --focus-ring: rgba(96, 165, 250, 0.4);
+  --border-hover: rgba(96, 165, 250, 0.4);
+  --selection-bg: rgba(96, 165, 250, 0.25);
+  --selection-text: #e2e8f0;
 }
 
-.font-heading {
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+/* Selection: soft blur color, no black */
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-text);
+}
+::-moz-selection {
+  background: var(--selection-bg);
+  color: var(--selection-text);
 }
 
-.font-body {
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+/* Focus: use soft blur ring (Tailwind ring-accent/25 or /40) on controls; no black outlines */
+
+/* Global transition utility: use for buttons, links, nav items, inputs */
+.transition-ui {
+  transition-duration: var(--transition-ui);
+  transition-timing-function: var(--ease-out);
+}
+.transition-ui-slow {
+  transition-duration: var(--transition-slow);
+  transition-timing-function: var(--ease-in-out);
 }
 
-.font-code {
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+/* Professional scrollbar: visible on hover, smooth width/color */
+.scrollbar-ui {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.scrollbar-ui::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-ui::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-ui::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  transition: background var(--transition-ui) var(--ease-out);
+}
+.scrollbar-ui::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.scrollbar-ui::-webkit-scrollbar-thumb:active {
+  background: #64748b;
+}
+.scrollbar-ui::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dark theme scrollbar – darker thumb so it doesn’t look like light mode */
+.dark .scrollbar-ui {
+  scrollbar-color: #475569 transparent;
+}
+.dark .scrollbar-ui::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dark .scrollbar-ui::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 9999px;
+}
+.dark .scrollbar-ui::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+.dark .scrollbar-ui::-webkit-scrollbar-thumb:active {
+  background: #64748b;
+}
+.dark .scrollbar-ui::-webkit-scrollbar-corner {
+  background: transparent;
 }
