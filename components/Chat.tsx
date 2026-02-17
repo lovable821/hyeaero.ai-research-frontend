@@ -45,21 +45,9 @@ const WELCOME = `Hello! I'm your AI research consultant powered by Hye Aero's da
 • Resale potential analysis`;
 
 function formatDataUsed(data_used: DataUsed): string {
-  const labels: Record<string, string> = {
-    "aircraft listing": "listings",
-    "aircraft_listing": "listings",
-    "aircraft sale": "sales",
-    "aircraft_sale": "sales",
-    "aircraft": "aircraft",
-    "faa registration": "FAA registrations",
-    "faa_registration": "FAA registrations",
-    document: "documents",
-  };
-  const parts = Object.entries(data_used)
-    .filter(([, n]) => n > 0)
-    .map(([k, n]) => `${n} ${labels[k] || k.replace(/_/g, " ")}`);
-  if (parts.length === 0) return "";
-  return `Based on ${parts.join(", ")} from Hye Aero's database.`;
+  const total = Object.values(data_used).reduce((sum, n) => sum + (typeof n === "number" ? n : 0), 0);
+  if (total <= 0) return "";
+  return total === 1 ? "Based on 1 external source." : `Based on ${total} external sources.`;
 }
 
 function wrapText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {

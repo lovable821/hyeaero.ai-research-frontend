@@ -17,6 +17,8 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "estimator", label: "Price Estimator", icon: <Calculator className="w-5 h-5 flex-shrink-0" /> },
   { id: "resale", label: "Resale Advisory", icon: <Users className="w-5 h-5 flex-shrink-0" /> },
 ];
+// Hide Market Comparison from nav (tab and logic remain in code)
+const TABS_VISIBLE = TABS.filter((t) => t.id !== "comparison");
 
 const VALUE_BREAKDOWN = [
   { label: "Base Aircraft Value", value: "$38.5M", positive: false },
@@ -62,6 +64,11 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
   const [estimatorModelsLoading, setEstimatorModelsLoading] = useState(true);
   const [samplePriceRequest, setSamplePriceRequest] = useState<{ model: string; region: string } | null>(null);
   const [priceTestPayloads, setPriceTestPayloads] = useState<Array<{ model: string; region: string }>>([]);
+
+  // When Market Comparison is hidden, avoid showing it as active tab
+  useEffect(() => {
+    if (activeTab === "comparison") setActiveTab("consultant");
+  }, [activeTab]);
 
   useEffect(() => {
     let cancelled = false;
@@ -210,7 +217,7 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
       React.createElement(
         "nav",
         { className: "flex flex-col gap-0.5 px-2" },
-        TABS.map((tab) =>
+        TABS_VISIBLE.map((tab) =>
           React.createElement(
             "button",
             {
@@ -283,7 +290,7 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         "aria-label": "Research tabs",
         style: { paddingBottom: "max(env(safe-area-inset-bottom), 8px)" },
       },
-      TABS.map((tab) =>
+      TABS_VISIBLE.map((tab) =>
         React.createElement(
           "button",
           {

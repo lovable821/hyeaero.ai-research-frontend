@@ -175,7 +175,7 @@ function downloadResalePdf(query: string, result: ResaleAdvisoryResponse) {
     y += lineHeight;
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Based on ${result.sources.length} source(s) from Hye Aero's database.`, margin, y);
+    doc.text(result.sources.length === 1 ? "Based on 1 external source." : `Based on ${result.sources.length} external sources.`, margin, y);
     doc.setTextColor(0, 0, 0);
   }
   doc.save(`hyeaero-resale-advisory-${new Date().toISOString().slice(0, 10)}.pdf`);
@@ -630,9 +630,9 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                   </div>
                   <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
                     {resaleResult.insight}
-                    {resaleResult.sources && Array.isArray(resaleResult.sources) && resaleResult.sources.length > 0 && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">Based on {resaleResult.sources.length} source(s) from Hye Aero&apos;s database.</p>
-                    )}
+{resaleResult.sources && Array.isArray(resaleResult.sources) && resaleResult.sources.length > 0 && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">{resaleResult.sources.length === 1 ? "Based on 1 external source." : `Based on ${resaleResult.sources.length} external sources.`}</p>
+                  )}
                   </div>
                 </div>
               )}
