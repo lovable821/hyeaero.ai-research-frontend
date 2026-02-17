@@ -4,7 +4,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_R
 const REQUEST_TIMEOUT_MS = 65000;
 
 const DEMO_ANSWER =
-  "Based on real-time market data, this is a placeholder response. Connect the backend (see README) for live answers from Hye Aero's data.";
+  "Based on real-time market data, this is a placeholder response. Connect the backend (see README) for live answers.";
 
 export async function POST(request: NextRequest) {
   try {

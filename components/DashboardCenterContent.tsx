@@ -267,20 +267,6 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
   } = props;
 
   if (activeTab === "consultant") {
-    if (!isAuthenticated) {
-      return (
-        <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-slate-900 min-h-0 overflow-y-auto">
-          <div className="max-w-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-sm p-10 text-center">
-            <div className="w-14 h-14 rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center text-accent mx-auto mb-4">
-              <MessageCircle className="w-7 h-7" />
-            </div>
-            <h2 className="font-heading text-lg font-semibold text-slate-900 dark:text-slate-100">Ask Consultant</h2>
-            <p className="text-slate-500 dark:text-slate-300 text-sm mt-2">Sign in to use the AI research consultant.</p>
-            <p className="text-slate-400 dark:text-slate-400 text-xs mt-4">Use the Sign in button in the header.</p>
-          </div>
-        </div>
-      );
-    }
     return (
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-white dark:bg-slate-900">
         <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center gap-3 transition-colors duration-200">
@@ -289,7 +275,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
           </div>
           <div>
             <h2 className="font-heading font-semibold text-slate-900 dark:text-slate-100">AI Research Consultant</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Powered by Hye Aero data</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Checking resources</p>
           </div>
         </div>
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
@@ -613,7 +599,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
               {resaleLoading && (
                 <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-800/80 p-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                   <Loader2 className="w-4 h-4 animate-spin text-accent flex-shrink-0" />
-                  Fetching resale guidance from Hye Aero data…
+                  Checking resources…
                 </div>
               )}
               {resaleResult && !resaleLoading && (

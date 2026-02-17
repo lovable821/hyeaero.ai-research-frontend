@@ -37,7 +37,7 @@ function generateId(): string {
   return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-const WELCOME = `Hello! I'm your AI research consultant powered by Hye Aero's data. I can help you with:
+const WELCOME = `Hello! I'm your AI research consultant, checking resources for you. I can help you with:
 
 • Aircraft model research and specifications
 • Market value comparisons and trends
@@ -220,7 +220,7 @@ export default function Chat({ onQuerySent, suggestedQuery, onSuggestedQueryCons
                 <Bot className="w-4 h-4" />
               </div>
               <div className="rounded-2xl rounded-bl-md bg-white dark:bg-slate-800 px-5 py-3.5 text-slate-500 dark:text-slate-400 text-[15px] border border-slate-100 dark:border-slate-600 shadow-sm">
-                Searching Hye Aero data…
+                Checking resources…
               </div>
             </div>
           )}

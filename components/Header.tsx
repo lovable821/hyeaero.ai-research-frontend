@@ -4,13 +4,7 @@ import Link from "next/link";
 import { Hexagon, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/lib/ThemeContext";
 
-type HeaderProps = {
-  isAuthenticated?: boolean;
-  onSignIn?: () => void;
-  onSignOut?: () => void;
-};
-
-export default function Header({ isAuthenticated, onSignIn, onSignOut }: HeaderProps) {
+export default function Header() {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -36,23 +30,6 @@ export default function Header({ isAuthenticated, onSignIn, onSignOut }: HeaderP
           >
             {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
-          {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={onSignOut}
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 rounded-lg py-2 px-3 min-h-touch flex items-center transition-all duration-200 ease-out hover:text-slate-700 dark:hover:text-slate-200 hover:bg-accent/10 dark:hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 active:scale-[0.98] active:bg-accent/15"
-            >
-              Sign out
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onSignIn}
-              className="rounded-lg bg-primary dark:bg-primary-light px-3 sm:px-4 py-2 text-sm font-medium text-white min-h-touch flex items-center transition-all duration-200 ease-out hover:bg-primary-light dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 active:scale-[0.98]"
-            >
-              Sign in
-            </button>
-          )}
         </div>
       </div>
     </header>
