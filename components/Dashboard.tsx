@@ -1,21 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MessageCircle, BarChart3, Calculator, Users } from "lucide-react";
+import { MessageCircle, BarChart3, Calculator, Users, Database } from "lucide-react";
 import ChatSidebar from "./ChatSidebar";
 import DashboardLayout from "./DashboardLayout";
 import DashboardCenterContent from "./DashboardCenterContent";
-import { postMarketComparison, postPriceEstimate, postResaleAdvisory, getAircraftModels, getPriceEstimateModels } from "@/lib/api";
-import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse } from "@/lib/api";
+import { postMarketComparison, postPriceEstimate, postResaleAdvisory, getAircraftModels, getPriceEstimateModels, getPhlydataAircraft, getPhlydataOwners } from "@/lib/api";
+import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse } from "@/lib/api";
 
 
-type TabId = "consultant" | "comparison" | "estimator" | "resale";
+type TabId = "consultant" | "comparison" | "estimator" | "resale" | "phlydata";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "consultant", label: "Ask Consultant", icon: <MessageCircle className="w-5 h-5 flex-shrink-0" /> },
   { id: "comparison", label: "Market Comparison", icon: <BarChart3 className="w-5 h-5 flex-shrink-0" /> },
   { id: "estimator", label: "Price Estimator", icon: <Calculator className="w-5 h-5 flex-shrink-0" /> },
   { id: "resale", label: "Resale Advisory", icon: <Users className="w-5 h-5 flex-shrink-0" /> },
+  { id: "phlydata", label: "PhlyData Aircraft", icon: <Database className="w-5 h-5 flex-shrink-0" /> },
 ];
 // Hide Market Comparison from nav (tab and logic remain in code)
 const TABS_VISIBLE = TABS.filter((t) => t.id !== "comparison");
@@ -65,10 +66,58 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
   const [samplePriceRequest, setSamplePriceRequest] = useState<{ model: string; region: string } | null>(null);
   const [priceTestPayloads, setPriceTestPayloads] = useState<Array<{ model: string; region: string }>>([]);
 
+  const [phlydataAircraft, setPhlydataAircraft] = useState<PhlydataAircraftRow[]>([]);
+  const [phlydataTotal, setPhlydataTotal] = useState(0);
+  const [phlydataPage, setPhlydataPage] = useState(1);
+  const [phlydataSearch, setPhlydataSearch] = useState("");
+  const phlydataPageSize = 100;
+  const [phlydataLoading, setPhlydataLoading] = useState(false);
+  const [phlydataError, setPhlydataError] = useState<string | null>(null);
+  const [phlydataOwnerDetail, setPhlydataOwnerDetail] = useState<PhlydataOwnersResponse | null>(null);
+  const [phlydataDetailLoading, setPhlydataDetailLoading] = useState(false);
+
   // When Market Comparison is hidden, avoid showing it as active tab
   useEffect(() => {
     if (activeTab === "comparison") setActiveTab("consultant");
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "phlydata") return;
+    let cancelled = false;
+    setPhlydataLoading(true);
+    setPhlydataError(null);
+    getPhlydataAircraft({ page: phlydataPage, page_size: phlydataPageSize, q: phlydataSearch || undefined })
+      .then((data) => {
+        if (!cancelled) {
+          setPhlydataAircraft(data.aircraft || []);
+          setPhlydataTotal(data.total ?? 0);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setPhlydataError(e instanceof Error ? e.message : "Failed to load PhlyData aircraft");
+          setPhlydataAircraft([]);
+          setPhlydataTotal(0);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setPhlydataLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [activeTab, phlydataPage, phlydataSearch]);
+
+  const handlePhlydataRowClick = (serial: string) => {
+    if (!serial) {
+      setPhlydataOwnerDetail(null);
+      return;
+    }
+    setPhlydataOwnerDetail(null);
+    setPhlydataDetailLoading(true);
+    getPhlydataOwners(serial)
+      .then((data) => setPhlydataOwnerDetail(data))
+      .catch(() => setPhlydataOwnerDetail({ aircraft: null, owners_from_listings: [], owners_from_faa: [], zoominfo_enrichment: [], message: "Failed to load owner details." }))
+      .finally(() => setPhlydataDetailLoading(false));
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -275,6 +324,19 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         onConsultantQuerySent: addRecentQuery,
         suggestedQuery,
         onSuggestedQueryConsumed: () => setSuggestedQuery(null),
+        phlydataAircraft,
+        phlydataTotal,
+        phlydataPage,
+        phlydataPageSize,
+        setPhlydataPage,
+        phlydataSearch,
+        setPhlydataSearch,
+        phlydataLoading,
+        phlydataError,
+        phlydataOwnerDetail,
+        phlydataDetailLoading,
+        onPhlydataRowClick: handlePhlydataRowClick,
+        onPhlydataCloseDetail: () => setPhlydataOwnerDetail(null),
       })
     ),
     React.createElement(

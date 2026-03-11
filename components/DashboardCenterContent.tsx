@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { MessageCircle, Bot, Download, Loader2 } from "lucide-react";
+import { MessageCircle, Bot, Download, Loader2, Database, X, User, Building2, MapPin, Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { jsPDF } from "jspdf";
 import Chat from "./Chat";
 import { postMarketComparison, postPriceEstimate, postResaleAdvisory } from "@/lib/api";
-import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse } from "@/lib/api";
+import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany } from "@/lib/api";
 
 function downloadComparisonPdf(result: MarketComparisonResponse, selectedModels: Set<string>, region: string) {
   const doc = new jsPDF({ format: "a4", unit: "mm", orientation: "landscape" });
@@ -181,7 +181,7 @@ function downloadResalePdf(query: string, result: ResaleAdvisoryResponse) {
   doc.save(`hyeaero-resale-advisory-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
-type TabId = "consultant" | "comparison" | "estimator" | "resale";
+type TabId = "consultant" | "comparison" | "estimator" | "resale" | "phlydata";
 
 export type DashboardCenterContentProps = {
   activeTab: TabId;
@@ -222,6 +222,19 @@ export type DashboardCenterContentProps = {
   onConsultantQuerySent?: (query: string) => void;
   suggestedQuery?: string | null;
   onSuggestedQueryConsumed?: () => void;
+  phlydataAircraft?: PhlydataAircraftRow[];
+  phlydataTotal?: number;
+  phlydataPage?: number;
+  phlydataPageSize?: number;
+  setPhlydataPage?: (p: number | ((prev: number) => number)) => void;
+  phlydataSearch?: string;
+  setPhlydataSearch?: (v: string) => void;
+  phlydataLoading?: boolean;
+  phlydataError?: string | null;
+  phlydataOwnerDetail?: PhlydataOwnersResponse | null;
+  phlydataDetailLoading?: boolean;
+  onPhlydataRowClick?: (serial: string) => void;
+  onPhlydataCloseDetail?: () => void;
 };
 
 export default function DashboardCenterContent(props: DashboardCenterContentProps) {
@@ -264,7 +277,23 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
     onConsultantQuerySent,
     suggestedQuery,
     onSuggestedQueryConsumed,
+    phlydataAircraft = [],
+    phlydataTotal = 0,
+    phlydataPage = 1,
+    phlydataPageSize = 100,
+    setPhlydataPage,
+    phlydataSearch = "",
+    setPhlydataSearch,
+    phlydataLoading = false,
+    phlydataError = null,
+    phlydataOwnerDetail = null,
+    phlydataDetailLoading = false,
+    onPhlydataRowClick,
+    onPhlydataCloseDetail,
   } = props;
+
+  const [phlydataSortKey, setPhlydataSortKey] = React.useState<"serial_number" | "registration_number" | "manufacturer_model" | "manufacturer_year" | "category">("serial_number");
+  const [phlydataSortDir, setPhlydataSortDir] = React.useState<"asc" | "desc">("asc");
 
   if (activeTab === "consultant") {
     return (
@@ -628,6 +657,285 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (activeTab === "phlydata") {
+    const formatPrice = (v: number | null | undefined) => (v != null ? `$${Number(v).toLocaleString()}` : "—");
+    const formatDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString() : "—");
+    return (
+      <div className="flex flex-1 min-h-0 overflow-hidden bg-white dark:bg-slate-900">
+        <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center text-white">
+                <Database className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-heading font-semibold text-slate-900 dark:text-slate-100">PhlyData Aircraft</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Data from the aircraft table — click a row to view owner details from listings and FAA registry.</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 min-h-0 overflow-auto p-4 flex flex-col gap-3">
+            {phlydataError ? (
+              <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20 p-4 text-red-700 dark:text-red-300 text-sm">
+                {phlydataError}
+              </div>
+            ) : null}
+            {/* Search bar always visible so it doesn't disappear while loading */}
+            <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search serial, registration, make/model, year, category…"
+                  value={phlydataSearch}
+                  onChange={(e) => {
+                    setPhlydataSearch?.(e.target.value);
+                    setPhlydataPage?.(1);
+                  }}
+                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                />
+              </div>
+              <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                {phlydataLoading ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : null}
+                {phlydataLoading ? "Loading…" : `${phlydataTotal.toLocaleString()} aircraft`}
+                {phlydataSearch ? " (filtered)" : " in aircraft table"}
+              </span>
+            </div>
+            {phlydataLoading && phlydataAircraft.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 py-12 text-slate-500 dark:text-slate-400 flex-1">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Loading aircraft…</span>
+              </div>
+            ) : phlydataAircraft.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-800/80 p-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                No aircraft found. The table shows data from the aircraft table only; load aircraft via the ETL pipeline if empty.
+              </div>
+            ) : (() => {
+              const sorted = [...phlydataAircraft].sort((a, b) => {
+                let va: string | number = "";
+                let vb: string | number = "";
+                if (phlydataSortKey === "serial_number") {
+                  va = (a.serial_number ?? "").toLowerCase();
+                  vb = (b.serial_number ?? "").toLowerCase();
+                } else if (phlydataSortKey === "registration_number") {
+                  va = (a.registration_number ?? "").toLowerCase();
+                  vb = (b.registration_number ?? "").toLowerCase();
+                } else if (phlydataSortKey === "manufacturer_model") {
+                  va = [a.manufacturer, a.model].filter(Boolean).join(" ").toLowerCase();
+                  vb = [b.manufacturer, b.model].filter(Boolean).join(" ").toLowerCase();
+                } else if (phlydataSortKey === "manufacturer_year") {
+                  va = a.manufacturer_year ?? a.delivery_year ?? 0;
+                  vb = b.manufacturer_year ?? b.delivery_year ?? 0;
+                } else {
+                  va = (a.category ?? "").toLowerCase();
+                  vb = (b.category ?? "").toLowerCase();
+                }
+                const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+                return phlydataSortDir === "asc" ? cmp : -cmp;
+              });
+              const totalPages = Math.max(1, Math.ceil(phlydataTotal / (phlydataPageSize || 100)));
+              const page = Math.min(phlydataPage, totalPages);
+              const handleSort = (key: typeof phlydataSortKey) => {
+                if (phlydataSortKey === key) setPhlydataSortDir((d) => (d === "asc" ? "desc" : "asc"));
+                else {
+                  setPhlydataSortKey(key);
+                  setPhlydataSortDir("asc");
+                }
+              };
+              return (
+                <div className="space-y-3 flex-1 min-h-0 flex flex-col">
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex-1 min-h-0 flex flex-col">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-slate-50 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-600">
+                          <tr>
+                            {[
+                              { key: "serial_number" as const, label: "Serial" },
+                              { key: "registration_number" as const, label: "Registration" },
+                              { key: "manufacturer_model" as const, label: "Manufacturer / Model" },
+                              { key: "manufacturer_year" as const, label: "Year" },
+                              { key: "category" as const, label: "Category" },
+                            ].map(({ key, label }) => (
+                              <th
+                                key={key}
+                                className="text-left py-3 px-4 font-medium text-slate-700 dark:text-slate-200 cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                onClick={() => handleSort(key)}
+                              >
+                                <span className="inline-flex items-center gap-1">
+                                  {label}
+                                  {phlydataSortKey === key ? (phlydataSortDir === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />) : null}
+                                </span>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sorted.map((row) => (
+                            <tr
+                              key={row.id}
+                              onClick={() => row.serial_number && onPhlydataRowClick?.(row.serial_number)}
+                              className="border-b border-slate-100 dark:border-slate-700 hover:bg-accent/10 dark:hover:bg-accent/15 cursor-pointer transition-colors"
+                            >
+                              <td className="py-3 px-4 font-mono text-slate-800 dark:text-slate-200">{row.serial_number ?? "—"}</td>
+                              <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{row.registration_number ?? "—"}</td>
+                              <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{[row.manufacturer, row.model].filter(Boolean).join(" ") || "—"}</td>
+                              <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{row.manufacturer_year ?? row.delivery_year ?? "—"}</td>
+                              <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{row.category ?? "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between gap-4 py-2">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Page {page} of {totalPages} ({phlydataTotal.toLocaleString()} total)
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setPhlydataPage?.(Math.max(1, page - 1))}
+                          disabled={page <= 1}
+                          className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+                          aria-label="Previous page"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <span className="px-2 text-sm text-slate-600 dark:text-slate-400">Page {page}</span>
+                        <button
+                          type="button"
+                          onClick={() => setPhlydataPage?.(Math.min(totalPages, page + 1))}
+                          disabled={page >= totalPages}
+                          className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+                          aria-label="Next page"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+        {/* Owner detail panel (slide-over) */}
+        {(phlydataOwnerDetail || phlydataDetailLoading) && (
+          <div className="w-full lg:w-[420px] flex-shrink-0 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col overflow-hidden shadow-lg">
+            <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+              <h3 className="font-heading font-semibold text-slate-900 dark:text-slate-100">Owner details</h3>
+              <button type="button" onClick={onPhlydataCloseDetail} aria-label="Close" className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {phlydataDetailLoading ? (
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 py-8">
+                  <Loader2 className="w-5 h-5 animate-spin flex-shrink-0" />
+                  <span>Loading owner details…</span>
+                </div>
+              ) : phlydataOwnerDetail?.message && !phlydataOwnerDetail.aircraft ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400">{phlydataOwnerDetail.message}</p>
+              ) : phlydataOwnerDetail?.aircraft ? (
+                <>
+                  <section>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                      <Database className="w-4 h-4" /> Aircraft
+                    </h4>
+                    <div className="rounded-lg bg-slate-50 dark:bg-slate-800/80 p-3 text-sm space-y-1">
+                      <p><span className="text-slate-500 dark:text-slate-400">Serial:</span> {phlydataOwnerDetail.aircraft.serial_number ?? "—"}</p>
+                      <p><span className="text-slate-500 dark:text-slate-400">Registration:</span> {phlydataOwnerDetail.aircraft.registration_number ?? "—"}</p>
+                      <p><span className="text-slate-500 dark:text-slate-400">Make/Model:</span> {[phlydataOwnerDetail.aircraft.manufacturer, phlydataOwnerDetail.aircraft.model].filter(Boolean).join(" ") || "—"}</p>
+                      <p><span className="text-slate-500 dark:text-slate-400">Year:</span> {phlydataOwnerDetail.aircraft.manufacturer_year ?? phlydataOwnerDetail.aircraft.delivery_year ?? "—"}</p>
+                    </div>
+                  </section>
+                  {phlydataOwnerDetail.zoominfo_enrichment && phlydataOwnerDetail.zoominfo_enrichment.length > 0 && (
+                    <section>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                        <Building2 className="w-4 h-4" /> Owner data (ZoomInfo)
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Controller: Seller Name · AircraftExchange: dealer_name · FAA: registrant_name</p>
+                      <ul className="space-y-4">
+                        {phlydataOwnerDetail.zoominfo_enrichment.map((item: ZoominfoEnrichmentItem, idx: number) => {
+                          const sourceLabel = item.source_platform === "controller" ? "Controller (Seller Name)" : item.source_platform === "aircraftexchange" ? "AircraftExchange (dealer_name)" : item.source_platform === "faa" ? "FAA (registrant_name)" : item.source_platform || "Listing";
+                          return (
+                          <li key={idx} className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 p-3 text-sm space-y-2">
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{sourceLabel}: “{item.query_name}”</p>
+                            {item.companies.length === 0 ? (
+                              <p className="text-slate-500 dark:text-slate-400">No ZoomInfo match.</p>
+                            ) : (
+                              <ul className="space-y-2">
+                                {item.companies.map((co: ZoominfoCompany, i: number) => {
+                                  const attrs = co.attributes || {};
+                                  const name = (attrs.name as string) || co.id || "—";
+                                  const website = attrs.website as string | undefined;
+                                  const address = [attrs.addressLine1, attrs.city, attrs.state, attrs.zipCode].filter(Boolean).join(", ");
+                                  return (
+                                    <li key={i} className="pl-2 border-l-2 border-emerald-300 dark:border-emerald-700 space-y-0.5">
+                                      <p className="font-medium text-slate-800 dark:text-slate-200">{name}</p>
+                                      {website && <p><a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{website}</a></p>}
+                                      {address && <p className="text-slate-600 dark:text-slate-300">{address}</p>}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
+                          </li>
+                          );
+                        })}
+                      </ul>
+                    </section>
+                  )}
+                  {phlydataOwnerDetail.owners_from_listings.length > 0 && (
+                    <section>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                        <Building2 className="w-4 h-4" /> From listings (Controller / AircraftExchange)
+                      </h4>
+                      <ul className="space-y-4">
+                        {phlydataOwnerDetail.owners_from_listings.map((o: OwnerFromListing, i: number) => (
+                          <li key={i} className="rounded-lg border border-slate-200 dark:border-slate-600 p-3 text-sm space-y-1.5">
+                            {o.source_platform && <span className="inline-block text-xs font-medium text-accent bg-accent/10 dark:bg-accent/20 px-2 py-0.5 rounded">{o.source_platform}</span>}
+                            {(o.seller_contact_name || o.seller) && <p className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><User className="w-4 h-4 flex-shrink-0" /> {o.seller_contact_name || o.seller}</p>}
+                            {o.seller_email && <p><a href={`mailto:${o.seller_email}`} className="text-accent hover:underline">{o.seller_email}</a></p>}
+                            {o.seller_phone && <p>{o.seller_phone}</p>}
+                            {o.seller_location && <p className="flex items-start gap-1.5"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /> {o.seller_location}</p>}
+                            {o.seller_broker && <p className="text-slate-500 dark:text-slate-400">Broker: {o.seller_broker}</p>}
+                            {(o.ask_price != null || o.sold_price != null) && <p className="text-slate-600 dark:text-slate-300">Ask: {formatPrice(o.ask_price)} · Sold: {formatPrice(o.sold_price)} · {formatDate(o.date_sold)}</p>}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+                  {phlydataOwnerDetail.owners_from_faa.length > 0 && (
+                    <section>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" /> FAA registry (registrant)
+                      </h4>
+                      <ul className="space-y-4">
+                        {phlydataOwnerDetail.owners_from_faa.map((o: OwnerFromFaa, i: number) => (
+                          <li key={i} className="rounded-lg border border-slate-200 dark:border-slate-600 p-3 text-sm space-y-1">
+                            {o.registrant_name && <p className="font-medium text-slate-800 dark:text-slate-200">{o.registrant_name}</p>}
+                            <p className="text-slate-600 dark:text-slate-300">
+                              {[o.street, o.street2, o.city, o.state, o.zip_code, o.country].filter(Boolean).join(", ") || "—"}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+                  {phlydataOwnerDetail.owners_from_listings.length === 0 && phlydataOwnerDetail.owners_from_faa.length === 0 && (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No owner data found in listings or FAA registry for this aircraft.</p>
+                  )}
+                </>
+              ) : null}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
