@@ -189,11 +189,41 @@ export type ZoominfoCompany = {
   attributes?: Record<string, unknown>; // e.g. name, website, address, industry
 };
 
+/** ZoomInfo contact/person search result item (GTM Data API). */
+export type ZoominfoContact = {
+  id: string | null;
+  type?: string;
+  attributes?: Record<string, unknown>; // e.g. fullName, firstName, lastName, companyName, phone, city
+};
+
+/** Which fields matched when we picked the best ZoomInfo result. */
+export type ZoominfoMatched = {
+  company?: boolean;
+  person?: boolean;
+  phone?: boolean;
+  location?: boolean;
+  /** True when content/word match was weak and we used vector + LLM to pick best. */
+  llm_fallback?: boolean;
+};
+
+/** How we chose the best ZoomInfo result: phone match, content/word score, or vector+LLM fallback. */
+export type ZoominfoMatchMethod = "phone" | "content_score" | "llm_fallback";
+
 export type ZoominfoEnrichmentItem = {
   query_name: string;
-  source_platform?: string;  // "controller" | "aircraftexchange" | "faa"
-  field_name?: string;      // "seller" (Controller Seller Name), "dealer_name" (AircraftExchange), "registrant_name" (FAA)
+  source_platform?: string;
+  field_name?: string;
   companies: ZoominfoCompany[];
+  contacts: ZoominfoContact[];
+  /** "company" | "contact" – which type is the best match. */
+  best_result_type?: "company" | "contact";
+  /** How we matched: phone, content_score, or llm_fallback. */
+  match_method?: ZoominfoMatchMethod;
+  /** Which data matched (company name, person name, phone, location). */
+  matched?: ZoominfoMatched;
+  /** Set when ZoomInfo was skipped or failed (e.g. token not set in backend .env). */
+  zoominfo_error?: string;
+  context_sent?: Record<string, unknown>;
 };
 
 export type PhlydataOwnersResponse = {

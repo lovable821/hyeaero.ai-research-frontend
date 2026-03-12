@@ -5,7 +5,7 @@ import { MessageCircle, Bot, Download, Loader2, Database, X, User, Building2, Ma
 import { jsPDF } from "jspdf";
 import Chat from "./Chat";
 import { postMarketComparison, postPriceEstimate, postResaleAdvisory } from "@/lib/api";
-import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany } from "@/lib/api";
+import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany, ZoominfoContact, ZoominfoMatched, ZoominfoMatchMethod } from "@/lib/api";
 
 function downloadComparisonPdf(result: MarketComparisonResponse, selectedModels: Set<string>, region: string) {
   const doc = new jsPDF({ format: "a4", unit: "mm", orientation: "landscape" });
@@ -227,6 +227,7 @@ export type DashboardCenterContentProps = {
   phlydataPage?: number;
   phlydataPageSize?: number;
   setPhlydataPage?: (p: number | ((prev: number) => number)) => void;
+  setPhlydataPageSize?: (size: number) => void;
   phlydataSearch?: string;
   setPhlydataSearch?: (v: string) => void;
   phlydataLoading?: boolean;
@@ -282,6 +283,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
     phlydataPage = 1,
     phlydataPageSize = 100,
     setPhlydataPage,
+    setPhlydataPageSize,
     phlydataSearch = "",
     setPhlydataSearch,
     phlydataLoading = false,
@@ -791,34 +793,51 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                       </table>
                     </div>
                   </div>
-                  {totalPages > 1 && (
-                    <div className="flex items-center justify-between gap-4 py-2">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Page {page} of {totalPages} ({phlydataTotal.toLocaleString()} total)
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setPhlydataPage?.(Math.max(1, page - 1))}
-                          disabled={page <= 1}
-                          className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
-                          aria-label="Previous page"
-                        >
-                          <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <span className="px-2 text-sm text-slate-600 dark:text-slate-400">Page {page}</span>
-                        <button
-                          type="button"
-                          onClick={() => setPhlydataPage?.(Math.min(totalPages, page + 1))}
-                          disabled={page >= totalPages}
-                          className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
-                          aria-label="Next page"
-                        >
-                          <ChevronRight className="w-5 h-5" />
-                        </button>
-                      </div>
+                  <div className="flex items-center justify-between gap-4 py-2 flex-wrap">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {totalPages > 1 ? `Page ${page} of ${totalPages}` : ""} ({phlydataTotal.toLocaleString()} total)
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-slate-500 dark:text-slate-400">Per page:</span>
+                      <select
+                        value={phlydataPageSize || 100}
+                        onChange={(e) => {
+                          const size = Number(e.target.value);
+                          setPhlydataPageSize?.(size);
+                          setPhlydataPage?.(1);
+                        }}
+                        className="text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-1.5 focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                        aria-label="Rows per page"
+                      >
+                        {[25, 50, 100].map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                      {totalPages > 1 && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setPhlydataPage?.(Math.max(1, page - 1))}
+                            disabled={page <= 1}
+                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="w-5 h-5" />
+                          </button>
+                          <span className="px-2 text-sm text-slate-600 dark:text-slate-400">Page {page}</span>
+                          <button
+                            type="button"
+                            onClick={() => setPhlydataPage?.(Math.min(totalPages, page + 1))}
+                            disabled={page >= totalPages}
+                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })()}
@@ -854,41 +873,142 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                       <p><span className="text-slate-500 dark:text-slate-400">Year:</span> {phlydataOwnerDetail.aircraft.manufacturer_year ?? phlydataOwnerDetail.aircraft.delivery_year ?? "—"}</p>
                     </div>
                   </section>
-                  {phlydataOwnerDetail.zoominfo_enrichment && phlydataOwnerDetail.zoominfo_enrichment.length > 0 && (
+                  {(phlydataOwnerDetail.zoominfo_enrichment?.length ?? 0) >= 0 && (
                     <section>
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
                         <Building2 className="w-4 h-4" /> Owner data (ZoomInfo)
                       </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Controller: Seller Name · AircraftExchange: dealer_name · FAA: registrant_name</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Controller: Seller Name · AircraftExchange: dealer_name · FAA: registrant_name · Best match by company/person/phone/location</p>
+                      {phlydataOwnerDetail.zoominfo_enrichment && phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0).length > 0 ? (
                       <ul className="space-y-4">
-                        {phlydataOwnerDetail.zoominfo_enrichment.map((item: ZoominfoEnrichmentItem, idx: number) => {
+                        {phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0).map((item: ZoominfoEnrichmentItem, idx: number) => {
                           const sourceLabel = item.source_platform === "controller" ? "Controller (Seller Name)" : item.source_platform === "aircraftexchange" ? "AircraftExchange (dealer_name)" : item.source_platform === "faa" ? "FAA (registrant_name)" : item.source_platform || "Listing";
+                          const matched: ZoominfoMatched = item.matched || {};
+                          const matchMethod: ZoominfoMatchMethod | undefined = item.match_method;
+                          const matchMethodLabel = matchMethod === "phone" ? "Phone" : matchMethod === "content_score" ? "Content match" : matchMethod === "llm_fallback" ? "AI (vector+LLM)" : null;
+                          const bestCompany = item.companies?.[0];
+                          const bestContact = item.contacts?.[0];
                           return (
                           <li key={idx} className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 p-3 text-sm space-y-2">
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{sourceLabel}: “{item.query_name}”</p>
-                            {item.companies.length === 0 ? (
-                              <p className="text-slate-500 dark:text-slate-400">No ZoomInfo match.</p>
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{sourceLabel}: “{item.query_name}”{matchMethodLabel != null && <span className="text-slate-400"> · Matched by: {matchMethodLabel}</span>}</p>
+                            {item.zoominfo_error ? (
+                              <p className="text-amber-600 dark:text-amber-400">{item.zoominfo_error}</p>
                             ) : (
-                              <ul className="space-y-2">
-                                {item.companies.map((co: ZoominfoCompany, i: number) => {
-                                  const attrs = co.attributes || {};
-                                  const name = (attrs.name as string) || co.id || "—";
-                                  const website = attrs.website as string | undefined;
-                                  const address = [attrs.addressLine1, attrs.city, attrs.state, attrs.zipCode].filter(Boolean).join(", ");
-                                  return (
-                                    <li key={i} className="pl-2 border-l-2 border-emerald-300 dark:border-emerald-700 space-y-0.5">
-                                      <p className="font-medium text-slate-800 dark:text-slate-200">{name}</p>
-                                      {website && <p><a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{website}</a></p>}
-                                      {address && <p className="text-slate-600 dark:text-slate-300">{address}</p>}
-                                    </li>
-                                  );
-                                })}
-                              </ul>
+                              <>
+                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                  {matched.company && <span className="inline-flex items-center gap-1 rounded bg-emerald-200/80 dark:bg-emerald-700/40 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:text-emerald-200">Company</span>}
+                                  {matched.person && <span className="inline-flex items-center gap-1 rounded bg-blue-200/80 dark:bg-blue-700/40 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">Person</span>}
+                                  {matched.phone && <span className="inline-flex items-center gap-1 rounded bg-violet-200/80 dark:bg-violet-700/40 px-2 py-0.5 text-xs font-medium text-violet-800 dark:text-violet-200">Phone</span>}
+                                  {matched.location && <span className="inline-flex items-center gap-1 rounded bg-amber-200/80 dark:bg-amber-700/40 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-200">Location</span>}
+                                  {matched.llm_fallback && <span className="inline-flex items-center gap-1 rounded bg-slate-200/80 dark:bg-slate-600/40 px-2 py-0.5 text-xs font-medium text-slate-800 dark:text-slate-200">AI match</span>}
+                                </div>
+                                {bestCompany && (
+                                  <div className="pl-2 border-l-2 border-emerald-300 dark:border-emerald-700 space-y-1">
+                                    {(() => {
+                                      const attrs = bestCompany.attributes || {};
+                                      const name = ((attrs.name as string) || (attrs.companyName as string) || bestCompany.id || "").trim();
+                                      const website = (attrs.website as string)?.trim();
+                                      const street = (attrs.street as string)?.trim() || (attrs.addressLine1 as string)?.trim() || (attrs.address as string)?.trim();
+                                      const city = (attrs.city as string)?.trim();
+                                      const state = (attrs.state as string)?.trim();
+                                      const zipCode = (attrs.zipCode as string)?.trim();
+                                      const country = (attrs.country as string)?.trim();
+                                      const phone = (attrs.phone ?? attrs.directPhone ?? attrs.mainPhone) as string | undefined;
+                                      const ticker = (attrs.ticker as string)?.trim();
+                                      const socialUrls = attrs.socialMediaUrls as Array<{ type?: string; url?: string; followerCount?: string }> | undefined;
+                                      const revenue = attrs.revenue as number | undefined;
+                                      const employeeCount = attrs.employeeCount != null ? Number(attrs.employeeCount) : null;
+                                      const employeeRange = (attrs.employeeRange as string)?.trim();
+                                      const employeesText = employeeCount != null && employeeRange
+                                        ? `${employeeCount} (${employeeRange})`
+                                        : employeeCount != null
+                                          ? String(employeeCount)
+                                          : employeeRange || "";
+                                      const industries = attrs.industries as string[] | undefined;
+                                      const foundedYear = attrs.foundedYear != null ? String(attrs.foundedYear).trim() : "";
+                                      const companyStatus = (attrs.companyStatus as string)?.trim();
+                                      const certified = attrs.certified;
+                                      const continent = (attrs.continent as string)?.trim();
+                                      const locationCount = attrs.locationCount != null ? Number(attrs.locationCount) : null;
+                                      const numberOfContactsInZoomInfo = attrs.numberOfContactsInZoomInfo != null ? Number(attrs.numberOfContactsInZoomInfo) : null;
+                                      const parentId = attrs.parentId != null && attrs.parentId !== 0 ? String(attrs.parentId) : null;
+                                      const parentName = (attrs.parentName as string)?.trim();
+                                      const hasName = name && name !== "—";
+                                      return (
+                                        <>
+                                          {hasName && <p className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><Building2 className="w-4 h-4 flex-shrink-0" /> {name}</p>}
+                                          {ticker && <p className="text-slate-600 dark:text-slate-300"><span className="text-slate-500 dark:text-slate-400">Ticker:</span> {ticker}</p>}
+                                          {website && <p className="text-slate-600 dark:text-slate-300"><span className="text-slate-500 dark:text-slate-400">Website:</span> <a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{website}</a></p>}
+                                          {phone && <p className="text-slate-600 dark:text-slate-300"><span className="text-slate-500 dark:text-slate-400">Phone:</span> {phone}</p>}
+                                          {Array.isArray(socialUrls) && socialUrls.length > 0 && socialUrls.some((s) => s?.url) && (
+                                            <div className="text-slate-600 dark:text-slate-300 text-xs space-y-0.5">
+                                              <span className="text-slate-500 dark:text-slate-400">Social:</span>
+                                              {socialUrls.filter((s) => s?.url).map((s, i) => {
+                                                const label = (s.type === "LINKED_IN" ? "LinkedIn" : s.type === "TWITTER" ? "Twitter/X" : s.type === "FACEBOOK" ? "Facebook" : s.type || "Link") as string;
+                                                return (
+                                                  <p key={i} className="pl-0">
+                                                    <a href={s.url!.startsWith("http") ? s.url : `https://${s.url}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{label}</a>
+                                                    {s.followerCount ? ` (${Number(s.followerCount).toLocaleString()} followers)` : ""}
+                                                  </p>
+                                                );
+                                              })}
+                                            </div>
+                                          )}
+                                          {street && <p className="text-slate-600 dark:text-slate-300 flex items-start gap-1.5"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /><span><span className="text-slate-500 dark:text-slate-400">Street:</span> {street}</span></p>}
+                                          {city && <p className="text-slate-600 dark:text-slate-300"><span className="text-slate-500 dark:text-slate-400">City:</span> {city}</p>}
+                                          {state && <p className="text-slate-600 dark:text-slate-300"><span className="text-slate-500 dark:text-slate-400">State:</span> {state}</p>}
+                                          {zipCode && <p className="text-slate-600 dark:text-slate-300"><span className="text-slate-500 dark:text-slate-400">Zip:</span> {zipCode}</p>}
+                                          {country && <p className="text-slate-600 dark:text-slate-300"><span className="text-slate-500 dark:text-slate-400">Country:</span> {country}</p>}
+                                          {revenue != null && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Revenue:</span> {typeof revenue === "number" ? revenue.toLocaleString() : revenue}</p>}
+                                          {employeesText && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Employees:</span> {employeesText}</p>}
+                                          {foundedYear && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Founded:</span> {foundedYear}</p>}
+                                          {companyStatus && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Status:</span> {companyStatus}</p>}
+                                          {Array.isArray(industries) && industries.length > 0 && (
+                                            <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Industries:</span> {industries.filter(Boolean).join(", ")}</p>
+                                          )}
+                                          {certified === true && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Certified:</span> Yes</p>}
+                                          {continent && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Continent:</span> {continent}</p>}
+                                          {locationCount != null && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Locations:</span> {locationCount}</p>}
+                                          {numberOfContactsInZoomInfo != null && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Contacts in ZoomInfo:</span> {numberOfContactsInZoomInfo.toLocaleString()}</p>}
+                                          {parentName && <p className="text-slate-600 dark:text-slate-300 text-xs"><span className="text-slate-500 dark:text-slate-400">Parent:</span> {parentName}</p>}
+                                        </>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+                                {bestContact && (
+                                  <div className="pl-2 border-l-2 border-blue-300 dark:border-blue-700 space-y-1 mt-2">
+                                    {(() => {
+                                      const attrs = bestContact.attributes || {};
+                                      const fullName = ((attrs.fullName as string) || [attrs.firstName, attrs.lastName].filter(Boolean).join(" ")).trim();
+                                      const companyName = (attrs.companyName as string)?.trim();
+                                      const phone = (attrs.phone ?? attrs.directPhone ?? attrs.mobilePhone ?? attrs.workPhone) as string | undefined;
+                                      const email = (attrs.email ?? attrs.emailAddress) as string | undefined;
+                                      const addressParts = [attrs.address, attrs.city, attrs.state].filter(Boolean).map(String);
+                                      const address = addressParts.join(", ").trim();
+                                      return (
+                                        <>
+                                          {fullName && <p className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><User className="w-4 h-4 flex-shrink-0" /> {fullName}</p>}
+                                          {companyName && <p className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5"><Building2 className="w-4 h-4 flex-shrink-0" /> {companyName}</p>}
+                                          {email && <p><a href={`mailto:${email}`} className="text-accent hover:underline">{email}</a></p>}
+                                          {phone && <p>{phone}</p>}
+                                          {address && <p className="flex items-start gap-1.5 text-slate-600 dark:text-slate-300"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /> {address}</p>}
+                                        </>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
+                              </>
                             )}
                           </li>
                           );
                         })}
                       </ul>
+                      ) : (
+                        <p className="text-sm text-slate-500 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-600 p-3">
+                          No ZoomInfo data found for this aircraft. Owner/seller names from listings or FAA did not match any company in ZoomInfo.
+                        </p>
+                      )}
                     </section>
                   )}
                   {phlydataOwnerDetail.owners_from_listings.length > 0 && (
@@ -900,7 +1020,8 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                         {phlydataOwnerDetail.owners_from_listings.map((o: OwnerFromListing, i: number) => (
                           <li key={i} className="rounded-lg border border-slate-200 dark:border-slate-600 p-3 text-sm space-y-1.5">
                             {o.source_platform && <span className="inline-block text-xs font-medium text-accent bg-accent/10 dark:bg-accent/20 px-2 py-0.5 rounded">{o.source_platform}</span>}
-                            {(o.seller_contact_name || o.seller) && <p className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><User className="w-4 h-4 flex-shrink-0" /> {o.seller_contact_name || o.seller}</p>}
+                            {o.seller && <p className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><Building2 className="w-4 h-4 flex-shrink-0" /> {o.seller}</p>}
+                            {o.seller_contact_name && <p className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><User className="w-4 h-4 flex-shrink-0" /> {o.seller_contact_name}</p>}
                             {o.seller_email && <p><a href={`mailto:${o.seller_email}`} className="text-accent hover:underline">{o.seller_email}</a></p>}
                             {o.seller_phone && <p>{o.seller_phone}</p>}
                             {o.seller_location && <p className="flex items-start gap-1.5"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /> {o.seller_location}</p>}

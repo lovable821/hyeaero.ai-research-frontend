@@ -69,8 +69,8 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
   const [phlydataAircraft, setPhlydataAircraft] = useState<PhlydataAircraftRow[]>([]);
   const [phlydataTotal, setPhlydataTotal] = useState(0);
   const [phlydataPage, setPhlydataPage] = useState(1);
+  const [phlydataPageSize, setPhlydataPageSize] = useState(100);
   const [phlydataSearch, setPhlydataSearch] = useState("");
-  const phlydataPageSize = 100;
   const [phlydataLoading, setPhlydataLoading] = useState(false);
   const [phlydataError, setPhlydataError] = useState<string | null>(null);
   const [phlydataOwnerDetail, setPhlydataOwnerDetail] = useState<PhlydataOwnersResponse | null>(null);
@@ -104,7 +104,7 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         if (!cancelled) setPhlydataLoading(false);
       });
     return () => { cancelled = true; };
-  }, [activeTab, phlydataPage, phlydataSearch]);
+  }, [activeTab, phlydataPage, phlydataPageSize, phlydataSearch]);
 
   const handlePhlydataRowClick = (serial: string) => {
     if (!serial) {
@@ -329,6 +329,7 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         phlydataPage,
         phlydataPageSize,
         setPhlydataPage,
+        setPhlydataPageSize,
         phlydataSearch,
         setPhlydataSearch,
         phlydataLoading,
