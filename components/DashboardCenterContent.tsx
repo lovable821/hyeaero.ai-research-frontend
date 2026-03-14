@@ -5,7 +5,7 @@ import { MessageCircle, Bot, Download, Loader2, Database, X, User, Building2, Ma
 import { jsPDF } from "jspdf";
 import Chat from "./Chat";
 import { postMarketComparison, postPriceEstimate, postResaleAdvisory } from "@/lib/api";
-import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany, ZoominfoContact, ZoominfoMatched, ZoominfoMatchMethod } from "@/lib/api";
+import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany, ZoominfoContact, ZoominfoMatched, ZoominfoMatchMethod, AviacostReference } from "@/lib/api";
 
 function downloadComparisonPdf(result: MarketComparisonResponse, selectedModels: Set<string>, region: string) {
   const doc = new jsPDF({ format: "a4", unit: "mm", orientation: "landscape" });
@@ -595,6 +595,21 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           </ul>
                         </>
                       )}
+                      {priceResult.aviacost_reference && (() => {
+                        const av = priceResult.aviacost_reference as AviacostReference;
+                        return (
+                          <div className="mt-6 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-800/80 p-4">
+                            <h3 className="font-heading font-semibold text-slate-900 dark:text-slate-100 mb-3">Operating cost reference (Aviacost)</h3>
+                            <div className="grid grid-cols-2 gap-2 text-sm text-slate-700 dark:text-slate-300">
+                              {av.variable_cost_per_hour != null && <p><span className="text-slate-500 dark:text-slate-400">Variable cost/hr:</span> ${av.variable_cost_per_hour.toLocaleString()}</p>}
+                              {av.average_pre_owned_price != null && <p><span className="text-slate-500 dark:text-slate-400">Avg pre-owned:</span> ${(av.average_pre_owned_price / 1_000_000).toFixed(2)}M</p>}
+                              {av.fuel_gallons_per_hour != null && <p><span className="text-slate-500 dark:text-slate-400">Fuel:</span> {av.fuel_gallons_per_hour} gal/hr</p>}
+                              {av.normal_cruise_speed_kts != null && <p><span className="text-slate-500 dark:text-slate-400">Cruise:</span> {av.normal_cruise_speed_kts} kts</p>}
+                              {av.name && <p className="col-span-2 text-xs text-slate-500 dark:text-slate-400">{av.name}</p>}
+                            </div>
+                          </div>
+                        );
+                      })()}
                       {priceResult.message && !priceResult.error && <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">{priceResult.message}</p>}
                     </>
                   )}

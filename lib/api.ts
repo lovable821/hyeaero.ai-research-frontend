@@ -87,6 +87,20 @@ export type PriceEstimateParams = {
   region?: string | null;
 };
 
+/** Aviacost operating cost & pre-owned price reference by aircraft type. */
+export type AviacostReference = {
+  name?: string | null;
+  manufacturer_name?: string | null;
+  category_name?: string | null;
+  variable_cost_per_hour?: number | null;
+  average_pre_owned_price?: number | null;
+  fuel_gallons_per_hour?: number | null;
+  normal_cruise_speed_kts?: number | null;
+  seats_full_range_nm?: number | null;
+  typical_passenger_capacity_max?: number | null;
+  years_in_production?: string | null;
+};
+
 export type PriceEstimateResponse = {
   estimated_value_millions: number | null;
   range_low_millions: number | null;
@@ -96,6 +110,7 @@ export type PriceEstimateResponse = {
   vs_average_pct: number | null;
   time_to_sale_days: number | null;
   breakdown: Array<{ label: string; value_millions?: number }>;
+  aviacost_reference?: AviacostReference | null;
   error?: string | null;
   message?: string | null;
 };
