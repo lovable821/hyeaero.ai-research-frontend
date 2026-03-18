@@ -106,14 +106,14 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
     return () => { cancelled = true; };
   }, [activeTab, phlydataPage, phlydataPageSize, phlydataSearch]);
 
-  const handlePhlydataRowClick = (serial: string) => {
+  const handlePhlydataRowClick = (serial: string, manufacturer?: string | null, model?: string | null) => {
     if (!serial) {
       setPhlydataOwnerDetail(null);
       return;
     }
     setPhlydataOwnerDetail(null);
     setPhlydataDetailLoading(true);
-    getPhlydataOwners(serial)
+    getPhlydataOwners(serial, manufacturer, model)
       .then((data) => setPhlydataOwnerDetail(data))
       .catch(() => setPhlydataOwnerDetail({ aircraft: null, owners_from_listings: [], owners_from_faa: [], zoominfo_enrichment: [], message: "Failed to load owner details." }))
       .finally(() => setPhlydataDetailLoading(false));

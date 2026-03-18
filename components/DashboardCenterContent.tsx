@@ -5,7 +5,7 @@ import { MessageCircle, Bot, Download, Loader2, Database, X, User, Building2, Ma
 import { jsPDF } from "jspdf";
 import Chat from "./Chat";
 import { postMarketComparison, postPriceEstimate, postResaleAdvisory } from "@/lib/api";
-import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany, ZoominfoContact, ZoominfoMatched, ZoominfoMatchMethod, AviacostReference } from "@/lib/api";
+import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany, ZoominfoContact, ZoominfoMatched, ZoominfoMatchMethod, AviacostReference, AircraftpostFleetAircraftRow } from "@/lib/api";
 
 function downloadComparisonPdf(result: MarketComparisonResponse, selectedModels: Set<string>, region: string) {
   const doc = new jsPDF({ format: "a4", unit: "mm", orientation: "landscape" });
@@ -234,7 +234,7 @@ export type DashboardCenterContentProps = {
   phlydataError?: string | null;
   phlydataOwnerDetail?: PhlydataOwnersResponse | null;
   phlydataDetailLoading?: boolean;
-  onPhlydataRowClick?: (serial: string) => void;
+  onPhlydataRowClick?: (serial: string, manufacturer?: string | null, model?: string | null) => void;
   onPhlydataCloseDetail?: () => void;
 };
 
@@ -610,6 +610,61 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           </div>
                         );
                       })()}
+                      {priceResult.aircraftpost_fleet_reference && (() => {
+                        const ap = priceResult.aircraftpost_fleet_reference as { matches: AircraftpostFleetAircraftRow[]; fleet_summary: any };
+                        const s = ap?.fleet_summary || {};
+                        const fmtNum = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.round(v).toLocaleString() : v == null ? "—" : String(v));
+                        const fmtPct = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? `${Math.round(v * 100)}%` : "—");
+                        const hours = s.airframe_hours || {};
+                        const land = s.total_landings || {};
+                        return (
+                          <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4">
+                            <h3 className="font-heading font-semibold text-slate-900 dark:text-slate-100 mb-2">AircraftPost fleet reference</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">Fleet context from AircraftPost (matched by make/model name).</p>
+                            <div className="grid grid-cols-2 gap-2 text-sm text-slate-700 dark:text-slate-300">
+                              <p><span className="text-slate-500 dark:text-slate-400">Records:</span> {fmtNum(s.total_records)}</p>
+                              <p><span className="text-slate-500 dark:text-slate-400">For sale rate:</span> {fmtPct(s.for_sale_rate)}</p>
+                              <p className="col-span-2 text-xs text-slate-500 dark:text-slate-400">
+                                <span className="text-slate-500 dark:text-slate-400">Top bases:</span>{" "}
+                                {Array.isArray(s.top_bases) && s.top_bases.length > 0 ? s.top_bases.map((b: any) => `${b.base_code ?? "—"} (${b.n})`).join(", ") : "—"}
+                              </p>
+                              <p className="col-span-2 text-xs text-slate-500 dark:text-slate-400">
+                                <span className="text-slate-500 dark:text-slate-400">Top countries:</span>{" "}
+                                {Array.isArray(s.top_countries) && s.top_countries.length > 0 ? s.top_countries.map((c: any) => `${c.country_code ?? "—"} (${c.n})`).join(", ") : "—"}
+                              </p>
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 gap-3">
+                              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 p-3">
+                                <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Airframe hours</p>
+                                <p className="text-xs text-slate-600 dark:text-slate-300">P10: {fmtNum(hours.p10)} · P50: {fmtNum(hours.p50)} · P90: {fmtNum(hours.p90)}</p>
+                              </div>
+                              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 p-3">
+                                <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Total landings</p>
+                                <p className="text-xs text-slate-600 dark:text-slate-300">P10: {fmtNum(land.p10)} · P50: {fmtNum(land.p50)} · P90: {fmtNum(land.p90)}</p>
+                              </div>
+                            </div>
+                            {Array.isArray(ap.matches) && ap.matches.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-2">Sample fleet records</p>
+                                <ul className="space-y-2">
+                                  {ap.matches.slice(0, 3).map((r: AircraftpostFleetAircraftRow, i: number) => (
+                                    <li key={r.id || i} className="rounded-lg border border-slate-200 dark:border-slate-600 p-3 text-sm">
+                                      <p className="font-medium text-slate-800 dark:text-slate-200">{r.make_model_name || "—"} {r.mfr_year != null ? `· ${r.mfr_year}` : ""}</p>
+                                      <p className="text-xs text-slate-600 dark:text-slate-300">
+                                        Serial: {r.serial_number ?? "—"} · Reg: {r.registration_number ?? "—"} · Base: {r.base_code ?? "—"} · Country: {r.country_code ?? "—"}
+                                      </p>
+                                      <p className="text-xs text-slate-600 dark:text-slate-300">
+                                        Hours: {r.airframe_hours ?? "—"} · Landings: {r.total_landings ?? "—"} · Prior owners: {r.prior_owners ?? "—"}
+                                      </p>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {s.note && <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">{s.note}</p>}
+                          </div>
+                        );
+                      })()}
                       {priceResult.message && !priceResult.error && <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">{priceResult.message}</p>}
                     </>
                   )}
@@ -794,7 +849,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           {sorted.map((row) => (
                             <tr
                               key={row.id}
-                              onClick={() => row.serial_number && onPhlydataRowClick?.(row.serial_number)}
+                              onClick={() => row.serial_number && onPhlydataRowClick?.(row.serial_number, row.manufacturer, row.model)}
                               className="border-b border-slate-100 dark:border-slate-700 hover:bg-accent/10 dark:hover:bg-accent/15 cursor-pointer transition-colors"
                             >
                               <td className="py-3 px-4 font-mono text-slate-800 dark:text-slate-200">{row.serial_number ?? "—"}</td>
@@ -877,17 +932,6 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                 <p className="text-sm text-slate-500 dark:text-slate-400">{phlydataOwnerDetail.message}</p>
               ) : phlydataOwnerDetail?.aircraft ? (
                 <>
-                  <section>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
-                      <Database className="w-4 h-4" /> Aircraft
-                    </h4>
-                    <div className="rounded-lg bg-slate-50 dark:bg-slate-800/80 p-3 text-sm space-y-1">
-                      <p><span className="text-slate-500 dark:text-slate-400">Serial:</span> {phlydataOwnerDetail.aircraft.serial_number ?? "—"}</p>
-                      <p><span className="text-slate-500 dark:text-slate-400">Registration:</span> {phlydataOwnerDetail.aircraft.registration_number ?? "—"}</p>
-                      <p><span className="text-slate-500 dark:text-slate-400">Make/Model:</span> {[phlydataOwnerDetail.aircraft.manufacturer, phlydataOwnerDetail.aircraft.model].filter(Boolean).join(" ") || "—"}</p>
-                      <p><span className="text-slate-500 dark:text-slate-400">Year:</span> {phlydataOwnerDetail.aircraft.manufacturer_year ?? phlydataOwnerDetail.aircraft.delivery_year ?? "—"}</p>
-                    </div>
-                  </section>
                   {(phlydataOwnerDetail.zoominfo_enrichment?.length ?? 0) >= 0 && (
                     <section>
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
@@ -1023,6 +1067,64 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                         <p className="text-sm text-slate-500 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-600 p-3">
                           No ZoomInfo data found for this aircraft. Owner/seller names from listings or FAA did not match any company in ZoomInfo.
                         </p>
+                      )}
+                    </section>
+                  )}
+                  <section>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                      <Database className="w-4 h-4" /> Aircraft
+                    </h4>
+                    <div className="rounded-lg bg-slate-50 dark:bg-slate-800/80 p-3 text-sm space-y-1">
+                      <p><span className="text-slate-500 dark:text-slate-400">Serial:</span> {phlydataOwnerDetail.aircraft.serial_number ?? "—"}</p>
+                      <p><span className="text-slate-500 dark:text-slate-400">Registration:</span> {phlydataOwnerDetail.aircraft.registration_number ?? "—"}</p>
+                      <p><span className="text-slate-500 dark:text-slate-400">Make/Model:</span> {[phlydataOwnerDetail.aircraft.manufacturer, phlydataOwnerDetail.aircraft.model].filter(Boolean).join(" ") || "—"}</p>
+                      <p><span className="text-slate-500 dark:text-slate-400">Year:</span> {phlydataOwnerDetail.aircraft.manufacturer_year ?? phlydataOwnerDetail.aircraft.delivery_year ?? "—"}</p>
+                    </div>
+                  </section>
+                  {(phlydataOwnerDetail.aircraftpost_fleet?.length ?? 0) > 0 && (
+                    <section>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                        <Database className="w-4 h-4" /> AircraftPost fleet (enrichment)
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Matched by serial number + make/model name.</p>
+                      <ul className="space-y-3">
+                        {phlydataOwnerDetail.aircraftpost_fleet!.slice(0, 3).map((r: AircraftpostFleetAircraftRow, i: number) => (
+                          <li key={r.id || i} className="rounded-lg border border-slate-200 dark:border-slate-600 p-3 text-sm space-y-1">
+                            <p className="font-medium text-slate-800 dark:text-slate-200">
+                              {r.make_model_name || "—"} {r.mfr_year != null ? `· ${r.mfr_year}` : ""}
+                            </p>
+                            <p className="text-slate-600 dark:text-slate-300">
+                              <span className="text-slate-500 dark:text-slate-400">Serial:</span> {r.serial_number ?? "—"}{" "}
+                              <span className="text-slate-400">·</span>{" "}
+                              <span className="text-slate-500 dark:text-slate-400">Reg:</span> {r.registration_number ?? "—"}
+                            </p>
+                            <p className="text-slate-600 dark:text-slate-300">
+                              <span className="text-slate-500 dark:text-slate-400">Base:</span> {r.base_code ?? "—"}{" "}
+                              <span className="text-slate-400">·</span>{" "}
+                              <span className="text-slate-500 dark:text-slate-400">Country:</span> {r.country_code ?? "—"}
+                            </p>
+                            <p className="text-slate-600 dark:text-slate-300">
+                              <span className="text-slate-500 dark:text-slate-400">Hours:</span> {r.airframe_hours ?? "—"}{" "}
+                              <span className="text-slate-400">·</span>{" "}
+                              <span className="text-slate-500 dark:text-slate-400">Landings:</span> {r.total_landings ?? "—"}{" "}
+                              <span className="text-slate-400">·</span>{" "}
+                              <span className="text-slate-500 dark:text-slate-400">Prior owners:</span> {r.prior_owners ?? "—"}
+                            </p>
+                            {(r.engine_program_type || r.apu_program) && (
+                              <p className="text-slate-600 dark:text-slate-300 text-xs">
+                                {[r.engine_program_type ? `Engine program: ${r.engine_program_type}` : null, r.apu_program ? `APU: ${r.apu_program}` : null].filter(Boolean).join(" · ")}
+                              </p>
+                            )}
+                            {r.owner_url && (
+                              <p className="text-xs">
+                                <a href={r.owner_url} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Owner URL</a>
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      {(phlydataOwnerDetail.aircraftpost_fleet!.length ?? 0) > 3 && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Showing 3 of {phlydataOwnerDetail.aircraftpost_fleet!.length} matches.</p>
                       )}
                     </section>
                   )}

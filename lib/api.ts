@@ -111,6 +111,24 @@ export type PriceEstimateResponse = {
   time_to_sale_days: number | null;
   breakdown: Array<{ label: string; value_millions?: number }>;
   aviacost_reference?: AviacostReference | null;
+  aircraftpost_fleet_reference?: {
+    matches: AircraftpostFleetAircraftRow[];
+    fleet_summary: {
+      manufacturer?: string | null;
+      model?: string | null;
+      serial?: string | null;
+      total_records: number;
+      records_with_hours?: number;
+      records_with_landings?: number;
+      for_sale_count?: number;
+      for_sale_rate?: number | null;
+      airframe_hours?: { avg?: number | null; p10?: number | null; p50?: number | null; p90?: number | null };
+      total_landings?: { avg?: number | null; p10?: number | null; p50?: number | null; p90?: number | null };
+      top_bases?: Array<{ base_code: string | null; n: number }>;
+      top_countries?: Array<{ country_code: string | null; n: number }>;
+      note?: string | null;
+    };
+  } | null;
   error?: string | null;
   message?: string | null;
 };
@@ -197,6 +215,28 @@ export type OwnerFromFaa = {
   country: string | null;
 };
 
+export type AircraftpostFleetAircraftRow = {
+  id: string;
+  aircraft_entity_id: number | null;
+  make_model_id: number | null;
+  make_model_name: string | null;
+  serial_number: string | null;
+  registration_number: string | null;
+  mfr_year: number | null;
+  eis_date: string | null;
+  country_code: string | null;
+  base_code: string | null;
+  owner_url: string | null;
+  airframe_hours: number | null;
+  total_landings: number | null;
+  prior_owners: number | null;
+  for_sale: boolean | null;
+  passengers: number | null;
+  engine_program_type: string | null;
+  apu_program: string | null;
+  ingestion_date: string | null;
+};
+
 /** ZoomInfo company search result item (GTM Data API). */
 export type ZoominfoCompany = {
   id: string | null;
@@ -247,11 +287,19 @@ export type PhlydataOwnersResponse = {
   owners_from_faa: OwnerFromFaa[];
   /** Owner/company data retrieved from ZoomInfo (primary display). */
   zoominfo_enrichment?: ZoominfoEnrichmentItem[];
+  /** AircraftPost fleet enrichment (matched by serial + make/model). */
+  aircraftpost_fleet?: AircraftpostFleetAircraftRow[];
   message?: string;
 };
 
-export async function getPhlydataOwners(serial: string): Promise<PhlydataOwnersResponse> {
+export async function getPhlydataOwners(
+  serial: string,
+  manufacturer?: string | null,
+  model?: string | null
+): Promise<PhlydataOwnersResponse> {
   const params = new URLSearchParams({ serial: serial.trim() });
+  if (manufacturer != null && String(manufacturer).trim()) params.set("manufacturer", String(manufacturer).trim());
+  if (model != null && String(model).trim()) params.set("model", String(model).trim());
   const res = await fetch(`${API_URL}/api/phlydata/owners?${params}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
