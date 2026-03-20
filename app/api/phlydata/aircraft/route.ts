@@ -9,9 +9,12 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const search = url.searchParams.toString();
 
-  // Prefer local FastAPI (works when frontend + backend are on the same machine).
-  // Fall back to NEXT_PUBLIC_API_URL if provided.
-  const backendBase = process.env.PHLYDATA_BACKEND_URL || "http://localhost:8000";
+  // Prefer configured backend.
+  // Render frontend and backend are separate services, so this MUST NOT default to localhost.
+  const backendBase =
+    process.env.PHLYDATA_BACKEND_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:8000";
 
   const backendUrl = `${backendBase}/api/phlydata/aircraft${search ? `?${search}` : ""}`;
 

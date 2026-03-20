@@ -753,6 +753,21 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
   if (activeTab === "phlydata") {
     const formatPrice = (v: number | null | undefined) => (v != null ? `$${Number(v).toLocaleString()}` : "—");
     const formatDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString() : "—");
+    const phlydataSearchNorm = (phlydataSearch ?? "").trim().toLowerCase();
+    const phlydataFilteredTotal = phlydataSearchNorm
+      ? phlydataAircraft.filter((row) => {
+          const matches = (v: unknown) => v != null && String(v).toLowerCase().includes(phlydataSearchNorm);
+          return (
+            matches(row.serial_number) ||
+            matches(row.registration_number) ||
+            matches(row.manufacturer) ||
+            matches(row.model) ||
+            matches(row.category) ||
+            matches(row.manufacturer_year) ||
+            matches(row.delivery_year)
+          );
+        }).length
+      : phlydataTotal;
     return (
       <div className="flex flex-1 min-h-0 overflow-hidden bg-white dark:bg-slate-900">
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
@@ -790,7 +805,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
               </div>
               <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                 {phlydataLoading ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : null}
-                {phlydataLoading ? "Loading…" : `${phlydataTotal.toLocaleString()} aircraft`}
+                {phlydataLoading ? "Loading…" : `${phlydataFilteredTotal.toLocaleString()} aircraft`}
                 {phlydataSearch ? " (filtered)" : " in aircraft table"}
               </span>
             </div>
@@ -804,9 +819,23 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                 No aircraft found. The table shows data from `phlydata_aircraft` only; run the ETL pipeline to load aircraft if empty.
               </div>
             ) : (() => {
-              // `phlydataAircraft` already comes from the backend for the current page + search.
-              // We only sort within the current page rows for display.
-              const sorted = [...phlydataAircraft].sort((a, b) => {
+              const searchNorm = phlydataSearchNorm;
+              const filtered = searchNorm
+                ? phlydataAircraft.filter((row) => {
+                    const matches = (v: unknown) => v != null && String(v).toLowerCase().includes(searchNorm);
+                    return (
+                      matches(row.serial_number) ||
+                      matches(row.registration_number) ||
+                      matches(row.manufacturer) ||
+                      matches(row.model) ||
+                      matches(row.category) ||
+                      matches(row.manufacturer_year) ||
+                      matches(row.delivery_year)
+                    );
+                  })
+                : phlydataAircraft;
+
+              const sorted = [...filtered].sort((a, b) => {
                 let va: string | number = "";
                 let vb: string | number = "";
                 if (phlydataSortKey === "serial_number") {
@@ -828,9 +857,12 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                 const cmp = va < vb ? -1 : va > vb ? 1 : 0;
                 return phlydataSortDir === "asc" ? cmp : -cmp;
               });
-
-              const totalPages = Math.max(1, Math.ceil(phlydataTotal / (phlydataPageSize || 100)));
+              const filteredTotal = filtered.length;
+              const pageSize = phlydataPageSize || 100;
+              const totalPages = Math.max(1, Math.ceil(filteredTotal / pageSize));
               const page = Math.min(phlydataPage, totalPages);
+              const start = (page - 1) * pageSize;
+              const pageRows = sorted.slice(start, start + pageSize);
               const handleSort = (key: typeof phlydataSortKey) => {
                 if (phlydataSortKey === key) setPhlydataSortDir((d) => (d === "asc" ? "desc" : "asc"));
                 else {
@@ -866,7 +898,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           </tr>
                         </thead>
                         <tbody>
-                          {sorted.map((row) => (
+                          {pageRows.map((row) => (
                             <tr
                               key={row.id}
                               onClick={() =>
@@ -892,7 +924,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2 flex-wrap">
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {totalPages > 1 ? `Page ${page} of ${totalPages}` : ""} ({phlydataTotal.toLocaleString()} total)
+                      {totalPages > 1 ? `Page ${page} of ${totalPages}` : ""} ({filteredTotal.toLocaleString()} total)
                     </p>
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-slate-500 dark:text-slate-400">Per page:</span>
