@@ -1018,9 +1018,9 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           Serial + manufacturer/model (via FAA aircraft code), then aircraft link, then serial-only fallback. Enriched via ZoomInfo when possible.
                         </p>
                       </details>
-                      {phlydataOwnerDetail.zoominfo_enrichment && phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0).length > 0 ? (
+                      {phlydataOwnerDetail.zoominfo_enrichment && phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0 || (item.zoominfo_error ?? null) != null).length > 0 ? (
                       <ul className="space-y-4">
-                        {phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0).map((item: ZoominfoEnrichmentItem, idx: number) => {
+                        {phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0 || (item.zoominfo_error ?? null) != null).map((item: ZoominfoEnrichmentItem, idx: number) => {
                           const sourceLabel = item.source_platform === "controller" ? "Controller (Seller Name)" : item.source_platform === "aircraftexchange" ? "AircraftExchange (dealer_name)" : item.source_platform === "faa" ? "FAA (registrant_name)" : item.source_platform || "Listing";
                           const matched: ZoominfoMatched = item.matched || {};
                           const matchMethod: ZoominfoMatchMethod | undefined = item.match_method;
@@ -1031,7 +1031,15 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           <li key={idx} className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 p-3 text-sm space-y-2">
                             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{sourceLabel}: “{item.query_name}”{matchMethodLabel != null && <span className="text-slate-400"> · Matched by: {matchMethodLabel}</span>}</p>
                             {item.zoominfo_error ? (
-                              <p className="text-amber-600 dark:text-amber-400">{item.zoominfo_error}</p>
+                              <p className="text-amber-600 dark:text-amber-400">
+                                {item.needs_contacts_admin_permission ? (
+                                  <>
+                                    ZoomInfo admin access is required for person-like registrant names to show email/phone.
+                                  </>
+                                ) : (
+                                  item.zoominfo_error
+                                )}
+                              </p>
                             ) : (
                               <>
                                 <div className="flex flex-wrap gap-1.5 mb-2">
@@ -1160,26 +1168,23 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                                 </div>
                                 <div className="min-w-0 space-y-2">
                                   <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                                    No ZoomInfo company profile
+                                    Not Found in ZoomInfo
                                   </p>
                                   <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                                    {hasFaa ? (
-                                      <>
-                                        We found a <strong className="font-medium text-slate-800 dark:text-slate-200">registrant name</strong> in the FAA
-                                        registry (see <span className="font-medium">FAA registry</span> below). ZoomInfo didn’t return a confident
-                                        business match—common for individuals, trusts, or names not in their directory.
-                                      </>
-                                    ) : (
-                                      <>
-                                        ZoomInfo didn’t return a company match for this aircraft. If FAA data appears below, you still have the official
-                                        registrant on file.
-                                      </>
-                                    )}
+                                    {hasFaa
+                                      ? "FAA registrant details are shown below. ZoomInfo couldn’t find a reliable profile for this registrant."
+                                      : "ZoomInfo couldn’t find a reliable profile. FAA details below (if available) are the official registrant."}
                                   </p>
-                                  <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-1 list-disc list-inside">
-                                    <li>Owner details are not missing—check the FAA section for the legal registrant.</li>
-                                    <li>ZoomInfo matches work best on recognizable company names.</li>
-                                  </ul>
+
+                                  {phlydataOwnerDetail.zoominfo_registrant_type_hint === "person" ? (
+                                    <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                                      ZoomInfo admin permission is required to fetch email/phone for person registrants.
+                                    </p>
+                                  ) : null}
+
+                                  {/* <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    For official owner/registrant info, use the FAA section.
+                                  </p> */}
                                 </div>
                               </div>
                             </div>

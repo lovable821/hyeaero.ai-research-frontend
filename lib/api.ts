@@ -275,10 +275,14 @@ export type ZoominfoEnrichmentItem = {
   best_result_type?: "company" | "contact";
   /** How we matched: phone, content_score, or llm_fallback. */
   match_method?: ZoominfoMatchMethod;
+  /** "company" | "person" (how we classified the FAA registrant name). */
+  registrant_type?: "company" | "person";
   /** Which data matched (company name, person name, phone, location). */
   matched?: ZoominfoMatched;
   /** Set when ZoomInfo was skipped or failed (e.g. token not set in backend .env). */
   zoominfo_error?: string;
+  /** True when ZoomInfo Contacts Search scope must be enabled for person-like registrant names. */
+  needs_contacts_admin_permission?: boolean;
   context_sent?: Record<string, unknown>;
 };
 
@@ -291,6 +295,10 @@ export type PhlydataOwnersResponse = {
   /** AircraftPost fleet enrichment (matched by serial + make/model). */
   aircraftpost_fleet?: AircraftpostFleetAircraftRow[];
   message?: string;
+  /** When ZoomInfo person/contact lookup fails due to missing scopes. */
+  zoominfo_contacts_access_denied?: boolean;
+  /** Backend (LLM+heuristics) hint: was the FAA registrant classified as person or company? */
+  zoominfo_registrant_type_hint?: "person" | "company" | null;
 };
 
 export async function getPhlydataOwners(
