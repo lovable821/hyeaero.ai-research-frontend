@@ -71,8 +71,6 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
   const [phlydataPage, setPhlydataPage] = useState(1);
   const [phlydataPageSize, setPhlydataPageSize] = useState(100);
   const [phlydataSearch, setPhlydataSearch] = useState("");
-  const [phlydataLoadedOnce, setPhlydataLoadedOnce] = useState(false);
-  const phlydataLoadStartedRef = React.useRef(false);
   const [phlydataLoading, setPhlydataLoading] = useState(false);
   const [phlydataError, setPhlydataError] = useState<string | null>(null);
   const [phlydataOwnerDetail, setPhlydataOwnerDetail] = useState<PhlydataOwnersResponse | null>(null);
@@ -85,28 +83,24 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
 
   useEffect(() => {
     if (activeTab !== "phlydata") return;
-    if (phlydataLoadedOnce || phlydataLoadStartedRef.current) return;
-    phlydataLoadStartedRef.current = true;
     let cancelled = false;
     setPhlydataLoading(true);
     setPhlydataError(null);
 
-    const INITIAL_PREFETCH_ROWS = 150; // > page size (default 100) so pagination appears immediately.
-
-    // 1) Initial quick render: first 100 rows
-    getPhlydataAircraft({ page: 1, page_size: INITIAL_PREFETCH_ROWS })
+    getPhlydataAircraft({
+      page: phlydataPage,
+      page_size: phlydataPageSize,
+      q: phlydataSearch || undefined,
+    })
       .then((data) => {
         if (!cancelled) {
           setPhlydataAircraft(data.aircraft || []);
           setPhlydataTotal(data.total ?? 0);
-          setPhlydataPage(1);
-          setPhlydataPageSize(100);
-          setPhlydataSearch("");
         }
       })
       .catch((e) => {
         if (!cancelled) {
-          setPhlydataError(e instanceof Error ? e.message : "Failed to load PhlyData aircraft (initial)");
+          setPhlydataError(e instanceof Error ? e.message : "Failed to load PhlyData aircraft");
           setPhlydataAircraft([]);
           setPhlydataTotal(0);
         }
@@ -115,21 +109,10 @@ export default function Dashboard({ isAuthenticated }: DashboardProps) {
         if (!cancelled) setPhlydataLoading(false);
       });
 
-    // 2) Background fill: load the full dataset once.
-    getPhlydataAircraft({ page: 1, page_size: 100000 })
-      .then((data) => {
-        if (!cancelled) {
-          setPhlydataAircraft(data.aircraft || []);
-          setPhlydataTotal(data.total ?? 0);
-          setPhlydataLoadedOnce(true);
-        }
-      })
-      .catch(() => {
-        // Keep the initial render even if the background fetch fails.
-      });
-
-    return () => { cancelled = true; };
-  }, [activeTab, phlydataLoadedOnce]);
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, phlydataPage, phlydataPageSize, phlydataSearch]);
 
   const handlePhlydataRowClick = (
     serial: string,
