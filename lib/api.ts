@@ -180,7 +180,8 @@ export async function getPhlydataAircraft(params?: { page?: number; page_size?: 
   searchParams.set("page", String(page));
   searchParams.set("page_size", String(page_size));
   if (q && q.trim()) searchParams.set("q", q.trim());
-  const res = await fetch(`${API_URL}/api/phlydata/aircraft?${searchParams}`);
+  // Call same-origin Next proxy (avoids CORS/network issues from the browser).
+  const res = await fetch(`/api/phlydata/aircraft?${searchParams}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error((err as { detail?: string }).detail || `API ${res.status}`);

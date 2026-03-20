@@ -1,11 +1,22 @@
 "use client";
 
 import React from "react";
-import { MessageCircle, Bot, Download, Loader2, Database, X, User, Building2, MapPin, Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageCircle, Bot, Download, Loader2, Database, X, User, Building2, MapPin, Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { jsPDF } from "jspdf";
 import Chat from "./Chat";
 import { postMarketComparison, postPriceEstimate, postResaleAdvisory } from "@/lib/api";
 import type { MarketComparisonResponse, PriceEstimateResponse, ResaleAdvisoryResponse, PhlydataAircraftRow, PhlydataOwnersResponse, OwnerFromListing, OwnerFromFaa, ZoominfoEnrichmentItem, ZoominfoCompany, ZoominfoContact, ZoominfoMatched, ZoominfoMatchMethod, AviacostReference, AircraftpostFleetAircraftRow } from "@/lib/api";
+
+/** Format FAA mailing address for readable multi-line display in Owner details. */
+function faaAddressLines(o: OwnerFromFaa): { street: string | null; street2: string | null; cityStateZip: string | null; extras: string[] } {
+  const street = o.street && String(o.street).trim() ? String(o.street).trim() : null;
+  const street2 = o.street2 && String(o.street2).trim() ? String(o.street2).trim() : null;
+  const cityStateZip = [o.city, o.state, o.zip_code].filter((s) => s && String(s).trim()).join(", ") || null;
+  const extras: string[] = [];
+  if (o.county && String(o.county).trim()) extras.push(`County: ${String(o.county).trim()}`);
+  if (o.region && String(o.region).trim()) extras.push(`Region: ${String(o.region).trim()}`);
+  return { street, street2, cityStateZip, extras };
+}
 
 function downloadComparisonPdf(result: MarketComparisonResponse, selectedModels: Set<string>, region: string) {
   const doc = new jsPDF({ format: "a4", unit: "mm", orientation: "landscape" });
@@ -234,7 +245,11 @@ export type DashboardCenterContentProps = {
   phlydataError?: string | null;
   phlydataOwnerDetail?: PhlydataOwnersResponse | null;
   phlydataDetailLoading?: boolean;
-  onPhlydataRowClick?: (serial: string, manufacturer?: string | null, model?: string | null) => void;
+  onPhlydataRowClick?: (
+    serial: string,
+    manufacturer?: string | null,
+    model?: string | null
+  ) => void;
   onPhlydataCloseDetail?: () => void;
 };
 
@@ -738,6 +753,21 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
   if (activeTab === "phlydata") {
     const formatPrice = (v: number | null | undefined) => (v != null ? `$${Number(v).toLocaleString()}` : "—");
     const formatDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString() : "—");
+    const phlydataSearchNorm = (phlydataSearch ?? "").trim().toLowerCase();
+    const phlydataFilteredTotal = phlydataSearchNorm
+      ? phlydataAircraft.filter((row) => {
+          const matches = (v: unknown) => v != null && String(v).toLowerCase().includes(phlydataSearchNorm);
+          return (
+            matches(row.serial_number) ||
+            matches(row.registration_number) ||
+            matches(row.manufacturer) ||
+            matches(row.model) ||
+            matches(row.category) ||
+            matches(row.manufacturer_year) ||
+            matches(row.delivery_year)
+          );
+        }).length
+      : phlydataTotal;
     return (
       <div className="flex flex-1 min-h-0 overflow-hidden bg-white dark:bg-slate-900">
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
@@ -748,7 +778,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
               </div>
               <div>
                 <h2 className="font-heading font-semibold text-slate-900 dark:text-slate-100">PhlyData Aircraft</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Data from the aircraft table — click a row to view owner details from listings and FAA registry.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Data from `phlydata_aircraft` table — click a row to view owner details from FAA registry (and ZoomInfo enrichment).</p>
               </div>
             </div>
           </div>
@@ -775,7 +805,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
               </div>
               <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                 {phlydataLoading ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : null}
-                {phlydataLoading ? "Loading…" : `${phlydataTotal.toLocaleString()} aircraft`}
+                {phlydataLoading ? "Loading…" : `${phlydataFilteredTotal.toLocaleString()} aircraft`}
                 {phlydataSearch ? " (filtered)" : " in aircraft table"}
               </span>
             </div>
@@ -786,10 +816,26 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
               </div>
             ) : phlydataAircraft.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-800/80 p-8 text-center text-slate-500 dark:text-slate-400 text-sm">
-                No aircraft found. The table shows data from the aircraft table only; load aircraft via the ETL pipeline if empty.
+                No aircraft found. The table shows data from `phlydata_aircraft` only; run the ETL pipeline to load aircraft if empty.
               </div>
             ) : (() => {
-              const sorted = [...phlydataAircraft].sort((a, b) => {
+              const searchNorm = phlydataSearchNorm;
+              const filtered = searchNorm
+                ? phlydataAircraft.filter((row) => {
+                    const matches = (v: unknown) => v != null && String(v).toLowerCase().includes(searchNorm);
+                    return (
+                      matches(row.serial_number) ||
+                      matches(row.registration_number) ||
+                      matches(row.manufacturer) ||
+                      matches(row.model) ||
+                      matches(row.category) ||
+                      matches(row.manufacturer_year) ||
+                      matches(row.delivery_year)
+                    );
+                  })
+                : phlydataAircraft;
+
+              const sorted = [...filtered].sort((a, b) => {
                 let va: string | number = "";
                 let vb: string | number = "";
                 if (phlydataSortKey === "serial_number") {
@@ -811,8 +857,12 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                 const cmp = va < vb ? -1 : va > vb ? 1 : 0;
                 return phlydataSortDir === "asc" ? cmp : -cmp;
               });
-              const totalPages = Math.max(1, Math.ceil(phlydataTotal / (phlydataPageSize || 100)));
+              const filteredTotal = filtered.length;
+              const pageSize = phlydataPageSize || 100;
+              const totalPages = Math.max(1, Math.ceil(filteredTotal / pageSize));
               const page = Math.min(phlydataPage, totalPages);
+              const start = (page - 1) * pageSize;
+              const pageRows = sorted.slice(start, start + pageSize);
               const handleSort = (key: typeof phlydataSortKey) => {
                 if (phlydataSortKey === key) setPhlydataSortDir((d) => (d === "asc" ? "desc" : "asc"));
                 else {
@@ -848,10 +898,17 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           </tr>
                         </thead>
                         <tbody>
-                          {sorted.map((row) => (
+                          {pageRows.map((row) => (
                             <tr
                               key={row.id}
-                              onClick={() => row.serial_number && onPhlydataRowClick?.(row.serial_number, row.manufacturer, row.model)}
+                              onClick={() =>
+                                row.serial_number &&
+                                onPhlydataRowClick?.(
+                                  row.serial_number,
+                                  row.manufacturer,
+                                row.model
+                                )
+                              }
                               className="border-b border-slate-100 dark:border-slate-700 hover:bg-accent/10 dark:hover:bg-accent/15 cursor-pointer transition-colors"
                             >
                               <td className="py-3 px-4 font-mono text-slate-800 dark:text-slate-200">{row.serial_number ?? "—"}</td>
@@ -867,7 +924,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2 flex-wrap">
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {totalPages > 1 ? `Page ${page} of ${totalPages}` : ""} ({phlydataTotal.toLocaleString()} total)
+                      {totalPages > 1 ? `Page ${page} of ${totalPages}` : ""} ({filteredTotal.toLocaleString()} total)
                     </p>
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-slate-500 dark:text-slate-400">Per page:</span>
@@ -948,9 +1005,19 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                   {(phlydataOwnerDetail.zoominfo_enrichment?.length ?? 0) >= 0 && (
                     <section>
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
-                        <Building2 className="w-4 h-4" /> Owner data (ZoomInfo)
+                        <Building2 className="w-4 h-4" /> Owner details (ZoomInfo)
                       </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Controller: Seller Name · AircraftExchange: dealer_name · FAA: registrant_name · Best match by company/person/phone/location</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                        Extra company details when ZoomInfo finds a match. If there’s no match, the official FAA registrant is still shown below.
+                      </p>
+                      <details className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+                        <summary className="cursor-pointer select-none hover:text-slate-600 dark:hover:text-slate-300">
+                          How we match owners
+                        </summary>
+                        <p className="mt-2 pl-0 leading-relaxed border-l-2 border-slate-200 dark:border-slate-600 pl-2">
+                          Serial + manufacturer/model (via FAA aircraft code), then aircraft link, then serial-only fallback. Enriched via ZoomInfo when possible.
+                        </p>
+                      </details>
                       {phlydataOwnerDetail.zoominfo_enrichment && phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0).length > 0 ? (
                       <ul className="space-y-4">
                         {phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0).map((item: ZoominfoEnrichmentItem, idx: number) => {
@@ -1077,9 +1144,47 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                         })}
                       </ul>
                       ) : (
-                        <p className="text-sm text-slate-500 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-600 p-3">
-                          No ZoomInfo data found for this aircraft. Owner/seller names from listings or FAA did not match any company in ZoomInfo.
-                        </p>
+                        (() => {
+                          const hasFaa = (phlydataOwnerDetail.owners_from_faa?.length ?? 0) > 0;
+                          return (
+                            <div
+                              role="status"
+                              className="rounded-xl border border-amber-200/90 dark:border-amber-900/50 bg-gradient-to-b from-amber-50/90 to-amber-50/40 dark:from-amber-950/35 dark:to-slate-900/40 p-4 space-y-3"
+                            >
+                              <div className="flex gap-3">
+                                <div
+                                  className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center"
+                                  aria-hidden
+                                >
+                                  <Info className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+                                </div>
+                                <div className="min-w-0 space-y-2">
+                                  <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                                    No ZoomInfo company profile
+                                  </p>
+                                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                                    {hasFaa ? (
+                                      <>
+                                        We found a <strong className="font-medium text-slate-800 dark:text-slate-200">registrant name</strong> in the FAA
+                                        registry (see <span className="font-medium">FAA registry</span> below). ZoomInfo didn’t return a confident
+                                        business match—common for individuals, trusts, or names not in their directory.
+                                      </>
+                                    ) : (
+                                      <>
+                                        ZoomInfo didn’t return a company match for this aircraft. If FAA data appears below, you still have the official
+                                        registrant on file.
+                                      </>
+                                    )}
+                                  </p>
+                                  <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-1 list-disc list-inside">
+                                    <li>Owner details are not missing—check the FAA section for the legal registrant.</li>
+                                    <li>ZoomInfo matches work best on recognizable company names.</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()
                       )}
                     </section>
                   )}
@@ -1153,23 +1258,57 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                   )}
                   {phlydataOwnerDetail.owners_from_faa.length > 0 && (
                     <section>
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
-                        <MapPin className="w-4 h-4" /> FAA registry (registrant)
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" /> FAA registry (official registrant)
                       </h4>
-                      <ul className="space-y-4">
-                        {phlydataOwnerDetail.owners_from_faa.map((o: OwnerFromFaa, i: number) => (
-                          <li key={i} className="rounded-lg border border-slate-200 dark:border-slate-600 p-3 text-sm space-y-1">
-                            {o.registrant_name && <p className="font-medium text-slate-800 dark:text-slate-200">{o.registrant_name}</p>}
-                            <p className="text-slate-600 dark:text-slate-300">
-                              {[o.street, o.street2, o.city, o.state, o.zip_code, o.country].filter(Boolean).join(", ") || "—"}
-                            </p>
-                          </li>
-                        ))}
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                        Legal owner / registrant on file with the FAA (from our synced registry). This is the authoritative source for who is registered to the aircraft.
+                      </p>
+                      <ul className="space-y-3">
+                        {phlydataOwnerDetail.owners_from_faa.map((o: OwnerFromFaa, i: number) => {
+                          const addr = faaAddressLines(o);
+                          const hasAddress =
+                            addr.street || addr.street2 || addr.cityStateZip || o.country || addr.extras.length > 0;
+                          return (
+                            <li
+                              key={i}
+                              className="rounded-xl border border-sky-200/90 dark:border-sky-800/50 bg-sky-50/50 dark:bg-sky-950/25 p-4 shadow-sm"
+                            >
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-800/90 dark:text-sky-400/95 mb-1.5">
+                                Registrant name
+                              </p>
+                              <p className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">
+                                {o.registrant_name?.trim() || "—"}
+                              </p>
+                              <div className="pt-3 border-t border-sky-200/70 dark:border-sky-800/40">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-800/80 dark:text-sky-400/90 mb-2 flex items-center gap-1.5">
+                                  <MapPin className="w-3.5 h-3.5" aria-hidden />
+                                  Mailing address
+                                </p>
+                                {hasAddress ? (
+                                  <div className="text-sm text-slate-700 dark:text-slate-200 space-y-1.5 pl-0">
+                                    {addr.street && <p className="leading-snug">{addr.street}</p>}
+                                    {addr.street2 && <p className="leading-snug">{addr.street2}</p>}
+                                    {addr.cityStateZip && <p className="leading-snug">{addr.cityStateZip}</p>}
+                                    {o.country && o.country.trim() && (
+                                      <p className="text-slate-600 dark:text-slate-300">{String(o.country).trim()}</p>
+                                    )}
+                                    {addr.extras.length > 0 && (
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">{addr.extras.join(" · ")}</p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-slate-500 dark:text-slate-400 italic">No address on file in this record.</p>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </section>
                   )}
                   {phlydataOwnerDetail.owners_from_listings.length === 0 && phlydataOwnerDetail.owners_from_faa.length === 0 && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No owner data found in listings or FAA registry for this aircraft.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No owner data found in FAA registry for this aircraft.</p>
                   )}
                 </>
               ) : null}
