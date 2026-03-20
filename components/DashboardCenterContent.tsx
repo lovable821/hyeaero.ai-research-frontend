@@ -1015,7 +1015,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           How we match owners
                         </summary>
                         <p className="mt-2 pl-0 leading-relaxed border-l-2 border-slate-200 dark:border-slate-600 pl-2">
-                          Serial + manufacturer/model (via FAA aircraft code), then aircraft link, then serial-only fallback. Enriched via ZoomInfo when possible.
+                          Serial first, then FAA model-code comparison with the selected model. If model does not match, FAA owner is not shown (no serial-only fallback).
                         </p>
                       </details>
                       {phlydataOwnerDetail.zoominfo_enrichment && phlydataOwnerDetail.zoominfo_enrichment.filter((item: ZoominfoEnrichmentItem) => (item.companies?.length ?? 0) > 0 || (item.contacts?.length ?? 0) > 0 || (item.zoominfo_error ?? null) != null).length > 0 ? (
@@ -1027,17 +1027,25 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                           const matchMethodLabel = matchMethod === "phone" ? "Phone" : matchMethod === "content_score" ? "Content match" : matchMethod === "llm_fallback" ? "AI (vector+LLM)" : null;
                           const bestCompany = item.companies?.[0];
                           const bestContact = item.contacts?.[0];
+                          const hasError = Boolean(item.zoominfo_error);
                           return (
-                          <li key={idx} className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 p-3 text-sm space-y-2">
+                          <li
+                            key={idx}
+                            className={
+                              hasError
+                                ? "rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/70 p-3 text-sm space-y-2"
+                                : "rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 p-3 text-sm space-y-2"
+                            }
+                          >
                             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{sourceLabel}: “{item.query_name}”{matchMethodLabel != null && <span className="text-slate-400"> · Matched by: {matchMethodLabel}</span>}</p>
                             {item.zoominfo_error ? (
-                              <p className="text-amber-600 dark:text-amber-400">
+                              <p className="text-sm text-slate-600 dark:text-slate-300">
                                 {item.needs_contacts_admin_permission ? (
                                   <>
-                                    ZoomInfo admin access is required for person-like registrant names to show email/phone.
+                                    Person name detected. ZoomInfo admin permission is required to show email/phone.
                                   </>
                                 ) : (
-                                  item.zoominfo_error
+                                  "No ZoomInfo profile found for this registrant."
                                 )}
                               </p>
                             ) : (
@@ -1168,7 +1176,7 @@ export default function DashboardCenterContent(props: DashboardCenterContentProp
                                 </div>
                                 <div className="min-w-0 space-y-2">
                                   <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                                    Not Found in ZoomInfo
+                                    ZoomInfo profile not found
                                   </p>
                                   <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                                     {hasFaa
