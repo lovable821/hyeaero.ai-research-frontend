@@ -216,6 +216,22 @@ export type OwnerFromFaa = {
   country: string | null;
 };
 
+/** AircraftPost owner row (matched by serial + registration + make/model on fleet table). */
+export type OwnerFromAircraftpost = {
+  serial_number: string | null;
+  registration_number: string | null;
+  owner_name: string | null;
+  /** When AircraftPost has no Owner label, backend may infer a name from owner_url (slug + optional LLM). */
+  owner_name_inferred?: string | null;
+  /** Company-style name derived from owner_url domain (e.g. fremontgroup.com → Fremont Group). */
+  owner_name_from_domain?: string | null;
+  owner_url: string | null;
+  make_model_name: string | null;
+  country_code: string | null;
+  base_code: string | null;
+  source_platform: string | null;
+};
+
 export type AircraftpostFleetAircraftRow = {
   id: string;
   aircraft_entity_id: number | null;
@@ -258,6 +274,8 @@ export type ZoominfoMatched = {
   person?: boolean;
   phone?: boolean;
   location?: boolean;
+  /** ZoomInfo company website matched AircraftPost owner_url / registrant website hint. */
+  website?: boolean;
   /** True when content/word match was weak and we used vector + LLM to pick best. */
   llm_fallback?: boolean;
 };
@@ -290,9 +308,13 @@ export type PhlydataOwnersResponse = {
   aircraft: PhlydataAircraftRow | null;
   owners_from_listings: OwnerFromListing[];
   owners_from_faa: OwnerFromFaa[];
+  /** Which owner backends returned rows for this request (e.g. faa, aircraftpost). */
+  owner_lookup_sources?: ("faa" | "aircraftpost")[];
+  /** AircraftPost owner/source rows (serial + tail registration + model). */
+  owners_from_aircraftpost?: OwnerFromAircraftpost[];
   /** Owner/company data retrieved from ZoomInfo (primary display). */
   zoominfo_enrichment?: ZoominfoEnrichmentItem[];
-  /** AircraftPost fleet enrichment (matched by serial + make/model). */
+  /** AircraftPost fleet enrichment (matched by serial + registration + make/model). */
   aircraftpost_fleet?: AircraftpostFleetAircraftRow[];
   message?: string;
   /** When ZoomInfo person/contact lookup fails due to missing scopes. */
@@ -304,11 +326,14 @@ export type PhlydataOwnersResponse = {
 export async function getPhlydataOwners(
   serial: string,
   manufacturer?: string | null,
-  model?: string | null
+  model?: string | null,
+  /** Tail / N-number — sent for AircraftPost owner_url lookup (registration-only match). */
+  registration?: string | null
 ): Promise<PhlydataOwnersResponse> {
   const params = new URLSearchParams({ serial: serial.trim() });
   if (manufacturer != null && String(manufacturer).trim()) params.set("manufacturer", String(manufacturer).trim());
   if (model != null && String(model).trim()) params.set("model", String(model).trim());
+  if (registration != null && String(registration).trim()) params.set("registration", String(registration).trim());
   const res = await fetch(`${API_URL}/api/phlydata/owners?${params}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
